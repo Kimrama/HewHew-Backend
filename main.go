@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hewhew-backend/config"
 	"hewhew-backend/database"
+	"hewhew-backend/server"
 )
 
 func main() {
@@ -12,6 +13,9 @@ func main() {
 	confString, _ := json.MarshalIndent(conf, "", "  ")
 	fmt.Println("config:\n", string(confString))
 
-	database.NewPostgresDatabase(conf.Database)
+	database := database.NewPostgresDatabase(conf.Database)
+	server := server.NewFiberServer(conf, database)
+
+	server.Start()
 
 }

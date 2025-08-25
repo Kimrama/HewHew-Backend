@@ -17,7 +17,6 @@ type (
 	Server struct {
 		Port           int      `mapstructure:"port" validate:"required"`
 		AllowedOrigins []string `mapstructure:"allowed_origins" validate:"required"`
-		Timeout        string   `mapstructure:"timeout" validate:"required"`
 	}
 	Auth struct {
 		Secret string `mapstructure:"secret" validate:"required"`
