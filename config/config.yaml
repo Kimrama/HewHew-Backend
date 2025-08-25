@@ -1,0 +1,14 @@
+server:
+    port: 8080
+    allowed_origins:
+        - "*"
+    timeout: 30s
+auth:
+    secret: softdev-hewhew-secret
+
+database:
+    host: 10.20.23.5
+    port: 5432
+    user: softdev
+    password: s0ftdev
+    dbname: softdev-database
