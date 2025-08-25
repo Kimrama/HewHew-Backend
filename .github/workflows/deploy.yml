@@ -1,39 +1,32 @@
-name: Deploy to Remote Server
+name: CI/CD Deploy
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}:latest .
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}:latest
+          IMAGE=ghcr.io/${{ github.repository }}:latest
+          docker build -t $IMAGE .
+          docker push $IMAGE
 
-      - name: Deploy on Remote Server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/your-app
-
-            echo "SERVER_PORT=80" > .env.prod
-            echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env.prod
-            echo "DB_HOST=127.0.0.1" >> .env.prod
-            echo "DB_PORT=5432" >> .env.prod
-            echo "DB_USER=${{ secrets.DB_USER }}" >> .env.prod
-            echo "DB_PASS=${{ secrets.DB_PASS }}" >> .env.prod
-            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.prod
-
-            docker compose --env-file .env.prod pull
-            docker compose --env-file .env.prod up -d
+  deploy:
+    runs-on: self-hosted
+    needs: build-and-push
+    steps:
+      - name: Pull and Restart Container
+        run: |
+          cd ~/your-app
+          docker compose --env-file .env.prod pull
+          docker compose --env-file .env.prod up -d
