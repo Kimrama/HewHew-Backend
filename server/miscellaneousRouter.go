@@ -7,7 +7,7 @@ func (s *fiberServer) initMiscellaneousRoutes() {
 
 	router.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status": "healthy",
+			"status": "healthy---v1----test CI/CD",
 		})
 	})
 }
