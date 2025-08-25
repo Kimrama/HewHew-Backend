@@ -9,9 +9,9 @@ import (
 
 type (
 	Config struct {
-		Server *Server `mapstructure:"server" validate:"required"`
-		Auth   *Auth   `mapstructure:"auth" validate:"required"`
-		DB     *DB     `mapstructure:"database" validate:"required"`
+		Server   *Server   `mapstructure:"server" validate:"required"`
+		Auth     *Auth     `mapstructure:"auth" validate:"required"`
+		Database *Database `mapstructure:"database" validate:"required"`
 	}
 
 	Server struct {
@@ -22,7 +22,7 @@ type (
 	Auth struct {
 		Secret string `mapstructure:"secret" validate:"required"`
 	}
-	DB struct {
+	Database struct {
 		Host     string `mapstructure:"host" validate:"required"`
 		Port     int    `mapstructure:"port" validate:"required"`
 		User     string `mapstructure:"user" validate:"required"`
