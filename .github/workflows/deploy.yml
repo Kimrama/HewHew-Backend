@@ -17,7 +17,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}:latest
+          IMAGE=ghcr.io/kimrama/hewhew-backend:latest
           docker build -t $IMAGE .
           docker push $IMAGE
 
