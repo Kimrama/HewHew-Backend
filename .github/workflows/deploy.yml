@@ -27,5 +27,5 @@ jobs:
             - name: Pull and Restart Container
               run: |
                   cd ~/softdev-hewhew-deployment
-                  docker compose --env-file .env.prod pull
-                  docker compose --env-file .env.prod up -d
+                  docker compose --env-file .env pull
+                  docker compose --env-file .env up -d
