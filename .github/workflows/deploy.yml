@@ -1,32 +1,31 @@
 name: CI/CD Deploy
 
 on:
-  push:
-    branches: ["main"]
+    push:
+        branches: ["main"]
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    build-and-push:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            - name: Login to GitHub Container Registry
+              run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and Push Docker Image
-        run: |
-          IMAGE=ghcr.io/kimrama/hewhew-backend:latest
-          docker build -t $IMAGE .
-          docker push $IMAGE
+            - name: Build and Push Docker Image
+              run: |
+                  IMAGE=ghcr.io/kimrama/hewhew-backend:latest
+                  docker build -t $IMAGE .
+                  docker push $IMAGE
 
-  deploy:
-    runs-on: self-hosted
-    needs: build-and-push
-    steps:
-      - name: Pull and Restart Container
-        run: |
-          cd ~/your-app
-          docker compose --env-file .env.prod pull
-          docker compose --env-file .env.prod up -d
+    deploy:
+        runs-on: self-hosted
+        needs: build-and-push
+        steps:
+            - name: Pull and Restart Container
+              run: |
+                  cd ~/your-app
+                  docker compose --env-file .env.prod pull
+                  docker compose --env-file .env.prod up -d
