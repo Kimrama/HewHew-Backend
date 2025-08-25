@@ -1,32 +1,35 @@
 package config
 
 import (
+	"os"
+	"strconv"
+	"strings"
 	"sync"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
 type (
 	Config struct {
-		Server   *Server   `mapstructure:"server" validate:"required"`
-		Auth     *Auth     `mapstructure:"auth" validate:"required"`
-		Database *Database `mapstructure:"database" validate:"required"`
+		Server   *Server
+		Auth     *Auth
+		Database *Database
 	}
 
 	Server struct {
-		Port           int      `mapstructure:"port" validate:"required"`
-		AllowedOrigins []string `mapstructure:"allowed_origins" validate:"required"`
+		Port           int
+		AllowedOrigins []string
 	}
 	Auth struct {
-		Secret string `mapstructure:"secret" validate:"required"`
+		Secret string
 	}
 	Database struct {
-		Host     string `mapstructure:"host" validate:"required"`
-		Port     int    `mapstructure:"port" validate:"required"`
-		User     string `mapstructure:"user" validate:"required"`
-		Password string `mapstructure:"password" validate:"required"`
-		DBName   string `mapstructure:"dbname" validate:"required"`
+		Host     string
+		Port     int
+		User     string
+		Password string
+		DBName   string
+		SSLMode  string
 	}
 )
 
@@ -37,24 +40,35 @@ var (
 
 func LoadConfig() *Config {
 	once.Do(func() {
-		viper.SetConfigName("config")
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath("./config")
-		viper.AddConfigPath(".")
-		viper.AutomaticEnv()
-
-		if err := viper.ReadInConfig(); err != nil {
-			panic(err)
-		}
-		if err := viper.Unmarshal(&configInstance); err != nil {
+		if err := godotenv.Load(); err != nil {
 			panic(err)
 		}
 
-		validating := validator.New()
-		if err := validating.Struct(configInstance); err != nil {
-			panic(err)
+		configInstance = &Config{
+			Server: &Server{
+				Port:           getEnvAsInt("SERVER_PORT"),
+				AllowedOrigins: strings.Split(os.Getenv("SERVER_ALLOWED_ORIGINS"), ","),
+			},
+			Auth: &Auth{
+				Secret: os.Getenv("AUTH_SECRET"),
+			},
+			Database: &Database{
+				Host:     os.Getenv("DB_HOST"),
+				Port:     getEnvAsInt("DB_PORT"),
+				User:     os.Getenv("DB_USER"),
+				Password: os.Getenv("DB_PASS"),
+				DBName:   os.Getenv("DB_NAME"),
+				SSLMode:  os.Getenv("DB_SSLMODE"),
+			},
 		}
-
 	})
 	return configInstance
+}
+
+func getEnvAsInt(key string) int {
+	value, err := strconv.Atoi(os.Getenv(key))
+	if err != nil {
+		panic(err)
+	}
+	return value
 }
