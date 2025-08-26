@@ -1,8 +1,10 @@
 package entities
 
+import "github.com/google/uuid"
+
 type Contract struct {
-	ContractID   string `gorm:"primaryKey"`
-	UserID       string `gorm:"not null"`
-	ContractType string `gorm:"not null"`
-	Detail       string `gorm:"not null"`
+	ContractID   uuid.UUID `gorm:"primaryKey"`
+	UserID       uuid.UUID `gorm:"not null"`
+	ContractType string    `gorm:"not null"`
+	Detail       string    `gorm:"not null"`
 }

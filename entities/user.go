@@ -1,7 +1,9 @@
 package entities
 
+import "github.com/google/uuid"
+
 type User struct {
-	UserID          string     `gorm:"primaryKey"`
+	UserID          uuid.UUID  `gorm:"primaryKey"`
 	UserName        string     `gorm:"not null"`
 	Password        string     `gorm:"not null"`
 	FName           string     `gorm:"not null"`
@@ -9,6 +11,7 @@ type User struct {
 	Faculty         string     `gorm:"not null"`
 	ProfileImageUrl string     `gorm:"size:512"`
 	Gender          string     `gorm:"default:'undefined'"`
-	Contract        []Contract `gorm:"foreignKey:UserID"`
+	Contracts       []Contract `gorm:"foreignKey:UserID"`
+	TopUps          []TopUp    `gorm:"foreignKey:UserID"`
 	Wallet          float64    `gorm:"default:0"`
 }
