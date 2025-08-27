@@ -9,4 +9,5 @@ type ShopAdmin struct {
 	Password string    `gorm:"not null"`
 	FName    string    `gorm:"not null"`
 	LName    string    `gorm:"not null"`
+	Shop     Shop      `gorm:"foreignKey:ShopID"`
 }
