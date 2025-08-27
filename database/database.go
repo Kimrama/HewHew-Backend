@@ -5,5 +5,5 @@ import (
 )
 
 type Database interface {
-	Connect() (*gorm.DB, error)
+	Connect() *gorm.DB
 }
