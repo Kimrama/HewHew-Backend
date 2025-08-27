@@ -9,14 +9,14 @@ type User struct {
 	FName           string           `gorm:"not null"`
 	LName           string           `gorm:"not null"`
 	Faculty         string           `gorm:"not null"`
-	ProfileImageUrl string           `gorm:"size:512"`
+	ProfileImageURL string           `gorm:"size:512"`
 	Gender          string           `gorm:"default:'undefined'"`
 	Contacts        []Contact        `gorm:"foreignKey:UserID"`
 	TopUps          []TopUp          `gorm:"foreignKey:UserID"`
 	Orders          []Order          `gorm:"foreignKey:UserOrderID"`
 	TransactionLogs []TransactionLog `gorm:"foreignKey:TargetUserID"`
-	Notifications   []Notification   `gorm:"foreignKey:UserID"`
-	Chats           []Chat           `gorm:"foreignKey:UserID"`
+	Notifications   []Notification   `gorm:"foreignKey:ReceiverID"`
+	Chats           []Chat           `gorm:"foreignKey:SenderID"`
 	Favourites      []Favourite      `gorm:"foreignKey:UserID"`
 	Reviews         []Review         `gorm:"foreignKey:UserReviewerID"`
 	Wallet          float64          `gorm:"default:0"`
