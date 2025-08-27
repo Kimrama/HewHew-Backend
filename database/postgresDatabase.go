@@ -19,8 +19,8 @@ var (
 	postgresDatabaseInstance *postgresDatabase
 )
 
-func (db *postgresDatabase) Connect() (*gorm.DB, error) {
-	return db.DB, nil
+func (db *postgresDatabase) Connect() *gorm.DB {
+	return db.DB
 }
 
 func NewPostgresDatabase(conf *config.Database) Database {
