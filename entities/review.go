@@ -8,8 +8,8 @@ import (
 
 type Review struct {
 	ReviewID       uuid.UUID `gorm:"primaryKey"`
-	UserReviewerID uuid.UUID `gorm:"not null"`
-	UserTargetID   uuid.UUID `gorm:"not null"`
+	UserReviewerID uuid.UUID `gorm:"not null;index:idx_reviewer_target"`
+	UserTargetID   uuid.UUID `gorm:"not null;index:idx_reviewer_target"`
 	OrderID        uuid.UUID `gorm:"not null"`
 	Rating         int       `gorm:"not null"`
 	Comment        string    `gorm:"size:512"`
