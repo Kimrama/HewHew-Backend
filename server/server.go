@@ -46,6 +46,7 @@ func getLoggerMiddleware() fiber.Handler {
 	return logger.New(logger.Config{
 		Format:     "${ip} - ${method} ${path} - ${status} - ${latency}\n",
 		TimeFormat: "2006-01-02 15:04:05",
+		TimeZone:   "Asia/Bangkok",
 	})
 }
 func (s *fiberServer) Start() {
