@@ -1,7 +1,11 @@
 package model
 
 type User struct {
-	ID    string
-	Name  string
-	Email string
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type Response struct {
+	Name string `json:"name"`
 }
