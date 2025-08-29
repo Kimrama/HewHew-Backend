@@ -1,11 +1,14 @@
 package model
 
-type User struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
+import (
+	"hewhew-backend/utils"
+)
 
-type Response struct {
-	Name string `json:"name"`
+type UserModel struct {
+	Username string
+	Password string
+	FName    string
+	LName    string
+	Gender   string
+	Image    *utils.ImageModel
 }
