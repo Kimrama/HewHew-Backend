@@ -1,59 +1,49 @@
 package service
 
 import (
-	"bytes"
-	"fmt"
-	"hewhew-backend/config"
 	"hewhew-backend/entities"
+	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
-	"mime"
-	"net/http"
-	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserServiceImpl struct {
 	userRepository repository.UserRepository
-	supabaseConfig *config.Supabase
 }
 
-func NewUserServiceImpl(userRepository repository.UserRepository, supabaseConfig *config.Supabase) UserService {
+func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	return &UserServiceImpl{
 		userRepository: userRepository,
-		supabaseConfig: supabaseConfig,
 	}
 }
 
-func (s *UserServiceImpl) CreateUser(userEntity *entities.User) (*entities.User, error) {
-	return s.userRepository.CreateUser(userEntity)
+func (s *UserServiceImpl) CreateUser(userModel *model.UserModel) error {
+	imageUrl := "NULL"
+	if userModel.Image != nil {
+		var err error
+		imageUrl, err = s.userRepository.UploadUserProfileImage(userModel.Username, userModel.Image)
+		if err != nil {
+			return err
+		}
+	}
+	userEntity := &entities.User{
+		UserID:          uuid.New(),
+		Username:        userModel.Username,
+		Password:        userModel.Password,
+		FName:           userModel.FName,
+		LName:           userModel.LName,
+		Gender:          userModel.Gender,
+		ProfileImageURL: imageUrl,
+	}
+
+	if err := s.userRepository.CreateUser(userEntity); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *UserServiceImpl) GetUsers() ([]*entities.User, error) {
 	return s.userRepository.GetUsers()
-}
-
-func (s *UserServiceImpl) UploadUserProfileImage(username string, ext string, image []byte) (string, error) {
-	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
-
-	mimeType := mime.TypeByExtension(ext)
-	if mimeType == "" {
-		mimeType = "application/octet-stream"
-	}
-
-	url := fmt.Sprintf("%s/storage/v1/object/images/userProfile/%s", s.supabaseConfig.URL, customName)
-	req, _ := http.NewRequest("POST", url, bytes.NewReader(image))
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.supabaseConfig.Key))
-	req.Header.Set("Content-Type", mimeType)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to upload image: %s", resp.Status)
-	}
-	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/userProfile/%s", s.supabaseConfig.URL, customName)
-	return publicURL, nil
 }

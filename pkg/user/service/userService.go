@@ -1,9 +1,11 @@
 package service
 
-import "hewhew-backend/entities"
+import (
+	"hewhew-backend/entities"
+	"hewhew-backend/pkg/user/model"
+)
 
 type UserService interface {
-	CreateUser(userEntity *entities.User) (*entities.User, error)
+	CreateUser(userModel *model.UserModel) error
 	GetUsers() ([]*entities.User, error)
-	UploadUserProfileImage(username string, ext string, image []byte) (string, error)
 }
