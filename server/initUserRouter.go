@@ -6,7 +6,7 @@ import (
 	_userService "hewhew-backend/pkg/user/service"
 )
 
-func (s *fiberServer) InitUserRouter() {
+func (s *fiberServer) initUserRouter() {
 	userRepository := _userRepository.NewUserRepositoryImpl(s.db, s.conf.Supabase)
 	userService := _userService.NewUserServiceImpl(userRepository)
 	userController := _userController.NewUserControllerImpl(userService)
