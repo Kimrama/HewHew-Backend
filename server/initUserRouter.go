@@ -7,12 +7,11 @@ import (
 )
 
 func (s *fiberServer) InitUserRouter() {
-	userRepository := _userRepository.NewUserRepositoryImpl(s.db)
-	userService := _userService.NewUserServiceImpl(userRepository, s.conf.Supabase)
+	userRepository := _userRepository.NewUserRepositoryImpl(s.db, s.conf.Supabase)
+	userService := _userService.NewUserServiceImpl(userRepository)
 	userController := _userController.NewUserControllerImpl(userService)
 
 	userGroup := s.app.Group("/v1/user")
 	userGroup.Get("/", userController.GetUsers)
 	userGroup.Post("/register", userController.CreateUser)
-	userGroup.Post("/test", userController.TestUser)
 }
