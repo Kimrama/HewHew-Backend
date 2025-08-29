@@ -36,9 +36,15 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		}
 		imageModel = preprocessUploadImage
 	}
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to hash password",
+		})
+	}
 	userModel := &model.UserModel{
 		Username: username,
-		Password: password,
+		Password: hashedPassword,
 		FName:    fname,
 		LName:    lname,
 		Gender:   gender,
