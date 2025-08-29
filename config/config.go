@@ -15,6 +15,7 @@ type (
 		Server   *Server
 		Auth     *Auth
 		Database *Database
+		Supabase *Supabase
 	}
 
 	Server struct {
@@ -31,6 +32,10 @@ type (
 		Password string
 		DBName   string
 		SSLMode  string
+	}
+	Supabase struct {
+		URL string
+		Key string
 	}
 )
 
@@ -60,6 +65,10 @@ func LoadConfig() *Config {
 				Password: getEnv("DB_PASS", ""),
 				DBName:   getEnv("DB_NAME", "postgres"),
 				SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			},
+			Supabase: &Supabase{
+				URL: getEnv("SUPABASE_URL", ""),
+				Key: getEnv("SUPABASE_KEY", ""),
 			},
 		}
 	})

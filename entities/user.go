@@ -4,12 +4,11 @@ import "github.com/google/uuid"
 
 type User struct {
 	UserID          uuid.UUID        `gorm:"primaryKey"`
-	UserName        string           `gorm:"not null"`
+	Username        string           `gorm:"not null;unique"`
 	Password        string           `gorm:"not null"`
 	FName           string           `gorm:"not null"`
 	LName           string           `gorm:"not null"`
-	Faculty         string           `gorm:"not null"`
-	ProfileImageURL string           `gorm:"size:512"`
+	ProfileImageURL string           `gorm:"size:1024;default:'NULL'"`
 	Gender          string           `gorm:"default:'undefined'"`
 	Contacts        []Contact        `gorm:"foreignKey:UserID"`
 	TopUps          []TopUp          `gorm:"foreignKey:UserID"`

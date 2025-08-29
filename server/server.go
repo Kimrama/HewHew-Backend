@@ -55,7 +55,9 @@ func (s *fiberServer) Start() {
 	s.app.Use(CORSMiddleware)
 	s.app.Use(LoggerMiddleware)
 
+	// Initialize routes
 	s.initMiscellaneousRoutes()
+	s.initUserRouter()
 
 	s.Listen()
 
