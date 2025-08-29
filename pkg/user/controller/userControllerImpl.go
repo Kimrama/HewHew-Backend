@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
+	"hewhew-backend/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,5 +19,59 @@ func NewUserControllerImpl(userService service.UserService) UserController {
 }
 
 func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
+	password := ctx.FormValue("Password")
+	username := ctx.FormValue("Username")
+	fname := ctx.FormValue("FName")
+	lname := ctx.FormValue("LName")
+	gender := ctx.FormValue("Gender")
+	image, _ := ctx.FormFile("Image")
+
+	var imageModel *utils.ImageModel
+	if image != nil {
+		preprocessUploadImage, err := utils.PreprocessUploadImage(image)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Failed to preprocess image",
+			})
+		}
+		imageModel = preprocessUploadImage
+	}
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to hash password",
+		})
+	}
+	userModel := &model.UserModel{
+		Username: username,
+		Password: hashedPassword,
+		FName:    fname,
+		LName:    lname,
+		Gender:   gender,
+		Image:    imageModel,
+	}
+
+	if err := c.userService.CreateUser(userModel); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "User created successfully",
+	})
+}
+
+func (c *UserControllerImpl) GetUsers(ctx *fiber.Ctx) error {
+	users, err := c.userService.GetUsers()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to retrieve users",
+		})
+	}
+	return ctx.JSON(users)
+}
+
+func (c *UserControllerImpl) DeleteUser(ctx *fiber.Ctx) error {
 	return nil
 }

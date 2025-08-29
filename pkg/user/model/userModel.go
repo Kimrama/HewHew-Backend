@@ -1,7 +1,14 @@
 package model
 
-type User struct {
-	ID    string
-	Name  string
-	Email string
+import (
+	"hewhew-backend/utils"
+)
+
+type UserModel struct {
+	Username string
+	Password string
+	FName    string
+	LName    string
+	Gender   string
+	Image    *utils.ImageModel
 }
