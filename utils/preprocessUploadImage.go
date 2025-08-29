@@ -13,17 +13,22 @@ import (
 	"github.com/nfnt/resize"
 )
 
-func PreprocessUploadImage(file *multipart.FileHeader) ([]byte, string, error) {
+type ImageModel struct {
+	Body []byte
+	Ext  string
+}
+
+func PreprocessUploadImage(file *multipart.FileHeader) (*ImageModel, error) {
 	src, err := file.Open()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	defer src.Close()
 
 	// decode image
 	img, _, err := image.Decode(src)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	// resize to 400x400
@@ -42,7 +47,10 @@ func PreprocessUploadImage(file *multipart.FileHeader) ([]byte, string, error) {
 		err = fmt.Errorf("unsupported file type: %s", ext)
 	}
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
-	return buf.Bytes(), ext, nil
+	return &ImageModel{
+		Body: buf.Bytes(),
+		Ext:  ext,
+	}, nil
 }
