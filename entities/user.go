@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type User struct {
 	UserID          uuid.UUID        `gorm:"primaryKey"`
-	UserName        string           `gorm:"not null;unique"`
+	Username        string           `gorm:"not null;unique"`
 	Password        string           `gorm:"not null"`
 	FName           string           `gorm:"not null"`
 	LName           string           `gorm:"not null"`
