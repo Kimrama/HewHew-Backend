@@ -64,27 +64,23 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	username := ctx.FormValue("Username")
 	password := ctx.FormValue("Password")
-	// 1. Get user from service
 	user, err := c.userService.GetUserByUsername(username)
 	if err != nil || user == nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid username or password",
 		})
 	}
-	// 2. Check password
 	if !utils.CompareHashPassword(user.Password, password) {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid username or password",
 		})
 	}
-	// 3. Generate JWT
 	token, err := utils.GenerateJWT(user.UserID, user.Username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate token",
 		})
 	}
-	// 4. Return token
 	return ctx.JSON(fiber.Map{
 		"token": token,
 	})
