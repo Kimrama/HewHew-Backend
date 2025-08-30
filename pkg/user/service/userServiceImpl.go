@@ -47,3 +47,7 @@ func (s *UserServiceImpl) CreateUser(userModel *model.UserModel) error {
 func (s *UserServiceImpl) GetUsers() ([]*entities.User, error) {
 	return s.userRepository.GetUsers()
 }
+
+func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
+    return s.userRepository.GetUserByUsername(username)
+}

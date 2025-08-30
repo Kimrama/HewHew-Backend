@@ -13,5 +13,7 @@ func (s *fiberServer) initUserRouter() {
 
 	userGroup := s.app.Group("/v1/user")
 	userGroup.Get("/", userController.GetUsers)
+	userGroup.Get("/:username", userController.GetUserByUsername)
 	userGroup.Post("/register", userController.CreateUser)
+	userGroup.Post("/login", userController.LoginUser)
 }

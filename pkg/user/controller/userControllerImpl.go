@@ -61,6 +61,30 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		"message": "User created successfully",
 	})
 }
+func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
+	username := ctx.FormValue("Username")
+	password := ctx.FormValue("Password")
+	user, err := c.userService.GetUserByUsername(username)
+	if err != nil || user == nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+	if !utils.CompareHashPassword(user.Password, password) {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+	token, err := utils.GenerateJWT(user.UserID, user.Username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate token",
+		})
+	}
+	return ctx.JSON(fiber.Map{
+		"token": token,
+	})
+}
 
 func (c *UserControllerImpl) GetUsers(ctx *fiber.Ctx) error {
 	users, err := c.userService.GetUsers()
@@ -70,6 +94,16 @@ func (c *UserControllerImpl) GetUsers(ctx *fiber.Ctx) error {
 		})
 	}
 	return ctx.JSON(users)
+}
+func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
+	username := ctx.Params("username")
+	user, err := c.userService.GetUserByUsername(username)	
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to retrieve username",
+		})
+	}
+	return ctx.JSON(user)
 }
 
 func (c *UserControllerImpl) DeleteUser(ctx *fiber.Ctx) error {

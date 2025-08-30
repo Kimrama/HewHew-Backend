@@ -60,3 +60,13 @@ func (r *UserRepositoryImpl) GetUsers() ([]*entities.User, error) {
 	r.db.Connect()
 	return users, nil
 }
+
+func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
+	var user entities.User
+	db := r.db.Connect()
+	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
