@@ -92,11 +92,18 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 
 func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Params("username")
-	user, err := c.userService.GetUserByUsername(username)
+	userEntity, err := c.userService.GetUserByUsername(username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to retrieve username",
 		})
+	}
+	user := &model.UserDetailResponse{
+		Username:        userEntity.Username,
+		FName:           userEntity.FName,
+		LName:           userEntity.LName,
+		Gender:          userEntity.Gender,
+		ProfileImageURL: userEntity.ProfileImageURL,
 	}
 	return ctx.JSON(user)
 }
