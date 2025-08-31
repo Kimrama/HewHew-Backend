@@ -4,7 +4,7 @@ import (
 	"hewhew-backend/utils"
 )
 
-type UserModel struct {
+type CreateUserRequest struct {
 	Username string
 	Password string
 	FName    string
