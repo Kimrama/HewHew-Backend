@@ -42,7 +42,7 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 			"error": "Failed to hash password",
 		})
 	}
-	userModel := &model.UserModel{
+	userModel := &model.CreateUserRequest{
 		Username: username,
 		Password: hashedPassword,
 		FName:    fname,
@@ -99,8 +99,4 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 		})
 	}
 	return ctx.JSON(user)
-}
-
-func (c *UserControllerImpl) DeleteUser(ctx *fiber.Ctx) error {
-	return nil
 }
