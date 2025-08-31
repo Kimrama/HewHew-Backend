@@ -18,7 +18,7 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	}
 }
 
-func (s *UserServiceImpl) CreateUser(userModel *model.UserModel) error {
+func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 	imageUrl := "NULL"
 	if userModel.Image != nil {
 		var err error
@@ -44,10 +44,6 @@ func (s *UserServiceImpl) CreateUser(userModel *model.UserModel) error {
 	return nil
 }
 
-func (s *UserServiceImpl) GetUsers() ([]*entities.User, error) {
-	return s.userRepository.GetUsers()
-}
-
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
-    return s.userRepository.GetUserByUsername(username)
+	return s.userRepository.GetUserByUsername(username)
 }

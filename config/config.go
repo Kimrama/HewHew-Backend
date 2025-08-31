@@ -13,7 +13,6 @@ import (
 type (
 	Config struct {
 		Server   *Server
-		Auth     *Auth
 		Database *Database
 		Supabase *Supabase
 	}
@@ -22,9 +21,7 @@ type (
 		Port           int
 		AllowedOrigins []string
 	}
-	Auth struct {
-		Secret string
-	}
+
 	Database struct {
 		Host     string
 		Port     int
@@ -54,9 +51,6 @@ func LoadConfig() *Config {
 			Server: &Server{
 				Port:           getEnvAsInt("SERVER_PORT", 8080),
 				AllowedOrigins: strings.Split(getEnv("SERVER_ALLOWED_ORIGINS", "*"), ","),
-			},
-			Auth: &Auth{
-				Secret: getEnv("AUTH_SECRET", "changeme-secret"),
 			},
 			Database: &Database{
 				Host:     getEnv("DB_HOST", "localhost"),

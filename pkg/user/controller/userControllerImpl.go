@@ -42,7 +42,7 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 			"error": "Failed to hash password",
 		})
 	}
-	userModel := &model.UserModel{
+	userModel := &model.CreateUserRequest{
 		Username: username,
 		Password: hashedPassword,
 		FName:    fname,
@@ -62,15 +62,19 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 	})
 }
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
-	username := ctx.FormValue("Username")
-	password := ctx.FormValue("Password")
-	user, err := c.userService.GetUserByUsername(username)
+	var loginRequest model.LoginRequest
+	if err := ctx.BodyParser(&loginRequest); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request",
+		})
+	}
+	user, err := c.userService.GetUserByUsername(loginRequest.Username)
 	if err != nil || user == nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid username or password",
 		})
 	}
-	if !utils.CompareHashPassword(user.Password, password) {
+	if !utils.CompareHashPassword(user.Password, loginRequest.Password) {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid username or password",
 		})
@@ -86,26 +90,20 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	})
 }
 
-func (c *UserControllerImpl) GetUsers(ctx *fiber.Ctx) error {
-	users, err := c.userService.GetUsers()
-	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve users",
-		})
-	}
-	return ctx.JSON(users)
-}
 func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Params("username")
-	user, err := c.userService.GetUserByUsername(username)	
+	userEntity, err := c.userService.GetUserByUsername(username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to retrieve username",
 		})
 	}
+	user := &model.UserDetailResponse{
+		Username:        userEntity.Username,
+		FName:           userEntity.FName,
+		LName:           userEntity.LName,
+		Gender:          userEntity.Gender,
+		ProfileImageURL: userEntity.ProfileImageURL,
+	}
 	return ctx.JSON(user)
-}
-
-func (c *UserControllerImpl) DeleteUser(ctx *fiber.Ctx) error {
-	return nil
 }
