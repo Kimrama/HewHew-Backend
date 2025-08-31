@@ -6,7 +6,6 @@ import (
 )
 
 type UserService interface {
-	CreateUser(userModel *model.UserModel) error
+	CreateUser(userModel *model.CreateUserRequest) error
 	GetUserByUsername(username string) (*entities.User, error)
-	GetUsers() ([]*entities.User, error)
 }
