@@ -42,7 +42,7 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 			"error": "Failed to hash password",
 		})
 	}
-	userModel := &model.UserModel{
+	userModel := &model.CreateUserRequest{
 		Username: username,
 		Password: hashedPassword,
 		FName:    fname,
@@ -61,17 +61,49 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		"message": "User created successfully",
 	})
 }
-
-func (c *UserControllerImpl) GetUsers(ctx *fiber.Ctx) error {
-	users, err := c.userService.GetUsers()
-	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve users",
+func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
+	var loginRequest model.LoginRequest
+	if err := ctx.BodyParser(&loginRequest); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request",
 		})
 	}
-	return ctx.JSON(users)
+	user, err := c.userService.GetUserByUsername(loginRequest.Username)
+	if err != nil || user == nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+	if !utils.CompareHashPassword(user.Password, loginRequest.Password) {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+	token, err := utils.GenerateJWT(user.UserID, user.Username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate token",
+		})
+	}
+	return ctx.JSON(fiber.Map{
+		"token": token,
+	})
 }
 
-func (c *UserControllerImpl) DeleteUser(ctx *fiber.Ctx) error {
-	return nil
+func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
+	username := ctx.Params("username")
+	userEntity, err := c.userService.GetUserByUsername(username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to retrieve username",
+		})
+	}
+	user := &model.UserDetailResponse{
+		Username:        userEntity.Username,
+		FName:           userEntity.FName,
+		LName:           userEntity.LName,
+		Gender:          userEntity.Gender,
+		ProfileImageURL: userEntity.ProfileImageURL,
+	}
+	return ctx.JSON(user)
 }

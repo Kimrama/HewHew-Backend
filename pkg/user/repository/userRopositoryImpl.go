@@ -55,8 +55,11 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	return publicURL, nil
 }
 
-func (r *UserRepositoryImpl) GetUsers() ([]*entities.User, error) {
-	var users []*entities.User
-	r.db.Connect()
-	return users, nil
+func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
+	var user entities.User
+	db := r.db.Connect()
+	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
