@@ -63,3 +63,15 @@ func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User,
 	}
 	return &user, nil
 }
+
+func (r *UserRepositoryImpl) EditUser(userID string, user *entities.User) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.User{}).
+		Where("user_id = ?", userID).
+		Updates(map[string]interface{}{
+			"f_name":  user.FName,
+			"l_name":  user.LName,
+			"gender": user.Gender,
+		}).Error
+	return err
+}
