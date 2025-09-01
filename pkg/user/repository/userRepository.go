@@ -9,4 +9,5 @@ type UserRepository interface {
 	CreateUser(userEntity *entities.User) error
 	UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error)
 	GetUserByUsername(username string) (*entities.User, error)
+	EditUser(userID string, user *entities.User) error
 }

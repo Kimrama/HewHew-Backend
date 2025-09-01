@@ -8,4 +8,5 @@ import (
 type UserService interface {
 	CreateUser(userModel *model.CreateUserRequest) error
 	GetUserByUsername(username string) (*entities.User, error)
+	EditUser(userID string, user *entities.User) error
 }
