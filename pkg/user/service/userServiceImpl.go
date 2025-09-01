@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
@@ -16,6 +17,18 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	return &UserServiceImpl{
 		userRepository: userRepository,
 	}
+}
+
+func (s *UserServiceImpl) EditUser(userID string, userEntity *entities.User) error {
+    userUUID, err := uuid.Parse(userID)
+    if err != nil {
+        return err
+    }
+	if userEntity.FName == "" && userEntity.LName == "" && userEntity.Gender == "" {
+		return errors.New("no fields to update")
+	}
+	userEntity.UserID = userUUID
+	return s.userRepository.EditUser(userID, userEntity)
 }
 
 func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
