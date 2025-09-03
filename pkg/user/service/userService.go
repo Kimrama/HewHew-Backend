@@ -11,6 +11,7 @@ import (
 type UserService interface {
 	CreateUser(userModel *model.CreateUserRequest) error
 	GetUserByUsername(username string) (*entities.User, error)
-	EditUserProfileImage(username string, imageModel *utils.ImageModel) error
 	GetUserByUserID(userID uuid.UUID) (*entities.User, error)
+	EditUser(userID string, userEntity *entities.User) error
+	EditUserProfileImage(username string, imageModel *utils.ImageModel) error
 }

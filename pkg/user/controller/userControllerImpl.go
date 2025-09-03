@@ -2,10 +2,11 @@ package controller
 
 import (
 	"hewhew-backend/pkg/user/model"
+	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type UserControllerImpl struct {
@@ -135,3 +136,33 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(user)
 }
+
+
+func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
+    id := ctx.Params("id")
+    userUUID, err := uuid.Parse(id)
+    if err != nil {
+        return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
+    }
+
+    var body model.EditUserRequest
+    if err := ctx.BodyParser(&body); err != nil {
+        return ctx.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+    }
+
+    body.UserID = userUUID
+
+    u := &entities.User{
+        UserID: userUUID,
+        FName:  body.FName,
+        LName:  body.LName,
+        Gender: body.Gender,
+    }
+
+    if err := c.userService.EditUser(u.UserID.String(), u); err != nil {
+        return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return ctx.JSON(fiber.Map{"message": "User updated successfully"})
+}
+
