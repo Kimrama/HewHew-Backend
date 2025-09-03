@@ -61,6 +61,34 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		"message": "User created successfully",
 	})
 }
+
+func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
+	image, _ := ctx.FormFile("Image")
+	username := ctx.Params("username")
+
+	var imageModel *utils.ImageModel
+	if image != nil {
+		preprocessUploadImage, err := utils.PreprocessUploadImage(image)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Failed to preprocess image",
+			})
+		}
+		imageModel = preprocessUploadImage
+	}
+
+	err := c.userService.EditUserProfileImage(username, imageModel)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to edit user profile image",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Profile image updated successfully",
+	})
+}
+
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest model.LoginRequest
 	if err := ctx.BodyParser(&loginRequest); err != nil {

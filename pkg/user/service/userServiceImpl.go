@@ -4,6 +4,7 @@ import (
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
+	"hewhew-backend/utils"
 
 	"github.com/google/uuid"
 )
@@ -44,6 +45,32 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 	return nil
 }
 
+func (s *UserServiceImpl) EditUserProfileImage(username string, imageModel *utils.ImageModel) error {
+	user, err := s.userRepository.GetUserByUsername(username)
+	newImageUrl := "NULL"
+	if err != nil {
+		return err
+	}
+	if user.ProfileImageURL == "NULL" {
+		newImageUrl, err = s.userRepository.UploadUserProfileImage(username, imageModel)	
+		if err != nil {
+			return err
+		}	
+	} else {
+		newImageUrl, err = s.userRepository.EditUserProfileImage(username, imageModel)
+		if err != nil {
+			return err
+		}	
+	}	
+	user.ProfileImageURL = newImageUrl
+	return nil
+}
+
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
 	return s.userRepository.GetUserByUsername(username)
+}
+
+func (s *UserServiceImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, error) {
+	return s.userRepository.GetUserByUserID(userID)
+	
 }

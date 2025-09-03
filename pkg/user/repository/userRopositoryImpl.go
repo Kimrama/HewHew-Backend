@@ -10,6 +10,8 @@ import (
 	"mime"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserRepositoryImpl struct {
@@ -55,11 +57,43 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	return publicURL, nil
 }
 
+func (r *UserRepositoryImpl) EditUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
+	user , err := r.GetUserByUsername(username)
+	if err != nil {
+		return "", err
+	}
+	url := fmt.Sprintf("%s/storage/v1/object/images/userProfile/%s", r.supabaseConfig.URL, user.ProfileImageURL)
+	req, _ := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+	client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return "",err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return "",fmt.Errorf("failed to delete image: %s", resp.Status)
+    }
+
+	return r.UploadUserProfileImage(username, imageModel)
+}
+
 func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
 	var user entities.User
 	db := r.db.Connect()
 	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
 		return nil, err
 	}
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, error) {
+	var user entities.User
+	db := r.db.Connect()	
+	if err := db.Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}	
 	return &user, nil
 }
