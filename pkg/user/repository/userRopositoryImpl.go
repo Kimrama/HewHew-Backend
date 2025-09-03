@@ -9,6 +9,7 @@ import (
 	"hewhew-backend/utils"
 	"mime"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -62,22 +63,27 @@ func (r *UserRepositoryImpl) EditUserProfileImage(userID string, imageModel *uti
         return err
     }
 
-	// if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
+	if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
 
-	// 	req, _ := http.NewRequest("DELETE", user.ProfileImageURL, nil)
-	// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+		publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+		objectPath := strings.TrimPrefix(user.ProfileImageURL, publicPrefixRender)
 
-	// 	client := &http.Client{}
-	// 	resp, err := client.Do(req)
-	// 	if err != nil {
-	// 		return "", err
-	// 	}
-	// 	defer resp.Body.Close()
+		deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
 
-	// 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-	// 		return "", fmt.Errorf("failed to delete image: %s", user.ProfileImageURL)
-	// 	}
-	// }
+		req, _ := http.NewRequest("DELETE", deleteURL, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			return fmt.Errorf("failed to delete image: %s", resp.Status)
+		}
+	}
 
 	newImageUrl, err := r.UploadUserProfileImage(user.Username, imageModel)
 	if err != nil {
