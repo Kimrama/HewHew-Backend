@@ -55,12 +55,60 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	return publicURL, nil
 }
 
+func (r *UserRepositoryImpl) EditUserProfileImage(userID string, imageModel *utils.ImageModel) error {
+	db := r.db.Connect()
+    user, err := r.GetUserByUserID(userID)
+    if err != nil {
+        return err
+    }
+
+	// if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
+
+	// 	req, _ := http.NewRequest("DELETE", user.ProfileImageURL, nil)
+	// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+	// 	client := &http.Client{}
+	// 	resp, err := client.Do(req)
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
+	// 	defer resp.Body.Close()
+
+	// 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+	// 		return "", fmt.Errorf("failed to delete image: %s", user.ProfileImageURL)
+	// 	}
+	// }
+
+	newImageUrl, err := r.UploadUserProfileImage(user.Username, imageModel)
+	if err != nil {
+		return err
+	}
+
+	err = db.Model(&entities.User{}).
+		Where("user_id = ?", userID).
+		Update("profile_image_url", newImageUrl).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
 	var user entities.User
 	db := r.db.Connect()
 	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
 		return nil, err
 	}
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) GetUserByUserID(userID string) (*entities.User, error) {
+	var user entities.User
+	db := r.db.Connect()	
+	if err := db.Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}	
 	return &user, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
+	"hewhew-backend/utils"
 
 	"github.com/google/uuid"
 )
@@ -54,6 +55,14 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 		return err
 	}
 
+	return nil
+}
+
+func (s *UserServiceImpl) EditUserProfileImage(userID string, imageModel *utils.ImageModel) error {
+	err := s.userRepository.EditUserProfileImage(userID, imageModel)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

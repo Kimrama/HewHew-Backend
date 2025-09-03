@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/entities"
+	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -62,6 +63,34 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		"message": "User created successfully",
 	})
 }
+
+func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
+	image, err := ctx.FormFile("Image")
+	if err != nil || image == nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Image file is required",
+		})
+	}
+
+	userID := ctx.Params("id")
+	imageModel, err := utils.PreprocessUploadImage(image)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to preprocess image",
+		})
+	}
+
+	err = c.userService.EditUserProfileImage(userID, imageModel)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
+}
+
+
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest model.LoginRequest
 	if err := ctx.BodyParser(&loginRequest); err != nil {
@@ -108,7 +137,6 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(user)
 }
-
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
     id := ctx.Params("id")
