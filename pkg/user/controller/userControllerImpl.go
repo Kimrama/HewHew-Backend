@@ -72,7 +72,7 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 		})
 	}
 
-	userID := ctx.Params("userID")
+	userID := ctx.Params("id")
 	imageModel, err := utils.PreprocessUploadImage(image)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
