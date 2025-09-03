@@ -15,6 +15,6 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Get("/:username", userController.GetUserByUsername)
 	userGroup.Post("/register", userController.CreateUser)
 	userGroup.Post("/login", userController.LoginUser)
-	userGroup.Put("/edit-profile-image/:username", userController.EditUserProfileImage)
+	userGroup.Put("/edit-profile-image/:userID", userController.EditUserProfileImage)
 	userGroup.Put("/edit-user/:userID", userController.EditUser)
 }

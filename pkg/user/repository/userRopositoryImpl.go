@@ -10,8 +10,6 @@ import (
 	"mime"
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type UserRepositoryImpl struct {
@@ -57,27 +55,43 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	return publicURL, nil
 }
 
-func (r *UserRepositoryImpl) EditUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
-	user , err := r.GetUserByUsername(username)
-	if err != nil {
-		return "", err
-	}
-	url := fmt.Sprintf("%s/storage/v1/object/images/userProfile/%s", r.supabaseConfig.URL, user.ProfileImageURL)
-	req, _ := http.NewRequest("DELETE", url, nil)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
-
-	client := &http.Client{}
-    resp, err := client.Do(req)
+func (r *UserRepositoryImpl) EditUserProfileImage(userID string, imageModel *utils.ImageModel) error {
+	db := r.db.Connect()
+    user, err := r.GetUserByUserID(userID)
     if err != nil {
-        return "",err
-    }
-    defer resp.Body.Close()
-
-    if resp.StatusCode != http.StatusOK {
-        return "",fmt.Errorf("failed to delete image: %s", resp.Status)
+        return err
     }
 
-	return r.UploadUserProfileImage(username, imageModel)
+	// if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
+
+	// 	req, _ := http.NewRequest("DELETE", user.ProfileImageURL, nil)
+	// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+	// 	client := &http.Client{}
+	// 	resp, err := client.Do(req)
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
+	// 	defer resp.Body.Close()
+
+	// 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+	// 		return "", fmt.Errorf("failed to delete image: %s", user.ProfileImageURL)
+	// 	}
+	// }
+
+	newImageUrl, err := r.UploadUserProfileImage(user.Username, imageModel)
+	if err != nil {
+		return err
+	}
+
+	err = db.Model(&entities.User{}).
+		Where("user_id = ?", userID).
+		Update("profile_image_url", newImageUrl).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
@@ -89,7 +103,7 @@ func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User,
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, error) {
+func (r *UserRepositoryImpl) GetUserByUserID(userID string) (*entities.User, error) {
 	var user entities.User
 	db := r.db.Connect()	
 	if err := db.Where("user_id = ?", userID).First(&user).Error; err != nil {

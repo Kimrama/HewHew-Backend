@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/entities"
+	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -64,31 +65,31 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
-	image, _ := ctx.FormFile("Image")
-	username := ctx.Params("username")
-
-	var imageModel *utils.ImageModel
-	if image != nil {
-		preprocessUploadImage, err := utils.PreprocessUploadImage(image)
-		if err != nil {
-			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Failed to preprocess image",
-			})
-		}
-		imageModel = preprocessUploadImage
-	}
-
-	err := c.userService.EditUserProfileImage(username, imageModel)
-	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to edit user profile image",
+	image, err := ctx.FormFile("Image")
+	if err != nil || image == nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Image file is required",
 		})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Profile image updated successfully",
-	})
+	userID := ctx.Params("userID")
+	imageModel, err := utils.PreprocessUploadImage(image)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to preprocess image",
+		})
+	}
+
+	err = c.userService.EditUserProfileImage(userID, imageModel)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
 }
+
 
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest model.LoginRequest
@@ -136,7 +137,6 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(user)
 }
-
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
     id := ctx.Params("id")
