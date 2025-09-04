@@ -1,14 +1,15 @@
 package controller
 
 import (
+	"fmt"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 type UserControllerImpl struct {
@@ -73,7 +74,19 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 		})
 	}
 
-	userID := ctx.Params("id")
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	userID := claims["user_id"].(string)
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
 	imageModel, err := utils.PreprocessUploadImage(image)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -81,7 +94,7 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = c.userService.EditUserProfileImage(userID, imageModel)
+	err = c.userService.EditUserProfileImage(userUUID, imageModel)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -90,7 +103,6 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
 }
-
 
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest model.LoginRequest
@@ -120,13 +132,36 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 		"token": token,
 	})
 }
+func getClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
+	token := ctx.Locals("jwt").(*jwt.Token)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract claims from token")
+	}
+	return claims, nil
+}
 
-func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
-	username := ctx.Params("username")
-	userEntity, err := c.userService.GetUserByUsername(username)
+func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
+
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	userID := claims["user_id"].(string)
+
+	fmt.Println("userID from token:", userID)
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
+	userEntity, err := c.userService.GetUserByUserID(userUUID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve username",
+			"error": "Failed to retrieve user",
 		})
 	}
 	user := &model.UserDetailResponse{
@@ -140,35 +175,48 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
-    // ✅ ดึง claims ที่ middleware ใส่ไว้
-    raw := ctx.Locals("claims")
-    if raw == nil {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+    // ใช้ helper
+    claims, err := getClaimsFromToken(ctx)
+    if err != nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+            "error": err.Error(),
+        })
     }
-    claims := raw.(jwt.MapClaims)
 
     tokenUserID, ok := claims["user_id"].(string)
     if !ok || tokenUserID == "" {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+            "error": "invalid token",
+        })
     }
 
     var body model.EditUserRequest
     if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "invalid request",
+        })
     }
 
-    u := &entities.User{
-        UserID: uuid.MustParse(tokenUserID), // ใช้จาก token
-        FName:  body.FName,
-        LName:  body.LName,
-        Gender: body.Gender,
-    }
+	userUUID, err := uuid.Parse(tokenUserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
 
-    if err := c.userService.EditUser(tokenUserID, u); err != nil {
-        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-    }
+	u := &entities.User{
+		UserID: userUUID,
+		FName:  body.FName,
+		LName:  body.LName,
+		Gender: body.Gender,
+	}
+
+	if err := c.userService.EditUser(userUUID, u); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
     return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
-
 
