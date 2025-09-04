@@ -219,4 +219,8 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 
     return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
-
+	id := ctx.Params("id")
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
+	}
