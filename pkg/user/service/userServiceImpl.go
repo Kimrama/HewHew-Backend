@@ -20,10 +20,10 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 }
 
 func (s *UserServiceImpl) EditUser(userID string, userEntity *entities.User) error {
-    userUUID, err := uuid.Parse(userID)
-    if err != nil {
-        return err
-    }
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return err
+	}
 	if userEntity.FName == "" && userEntity.LName == "" && userEntity.Gender == "" {
 		return errors.New("no fields to update")
 	}
