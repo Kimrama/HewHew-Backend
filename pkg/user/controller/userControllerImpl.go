@@ -217,5 +217,5 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-    return ctx.JSON(fiber.Map{"message": "User updated successfully"})
+    return ctx.JSON(fiber.Map{"message": " User updated successfully "})
 }
