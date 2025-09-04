@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserRepositoryImpl struct {
@@ -56,12 +58,12 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	return publicURL, nil
 }
 
-func (r *UserRepositoryImpl) EditUserProfileImage(userID string, imageModel *utils.ImageModel) error {
+func (r *UserRepositoryImpl) EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error {
 	db := r.db.Connect()
-    user, err := r.GetUserByUserID(userID)
-    if err != nil {
-        return err
-    }
+	user, err := r.GetUserByUserID(userID)
+	if err != nil {
+		return err
+	}
 
 	if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
 
@@ -109,22 +111,22 @@ func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User,
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) GetUserByUserID(userID string) (*entities.User, error) {
+func (r *UserRepositoryImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, error) {
 	var user entities.User
-	db := r.db.Connect()	
+	db := r.db.Connect()
 	if err := db.Where("user_id = ?", userID).First(&user).Error; err != nil {
 		return nil, err
-	}	
+	}
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) EditUser(userID string, user *entities.User) error {
+func (r *UserRepositoryImpl) EditUser(userID uuid.UUID, user *entities.User) error {
 	db := r.db.Connect()
 	err := db.Model(&entities.User{}).
 		Where("user_id = ?", userID).
 		Updates(map[string]interface{}{
-			"f_name":  user.FName,
-			"l_name":  user.LName,
+			"f_name": user.FName,
+			"l_name": user.LName,
 			"gender": user.Gender,
 		}).Error
 	return err
