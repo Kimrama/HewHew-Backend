@@ -17,6 +17,7 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Post("/login", userController.LoginUser)
 
 	userGroup.Use(utils.JWTProtected())
-	userGroup.Get("/:username", userController.GetUserByUsername)
-	userGroup.Put("/:id", userController.EditUser)
+	userGroup.Get("/", userController.GetUser)
+	userGroup.Put("/profile-image", userController.EditUserProfileImage)
+	userGroup.Put("/", userController.EditUser)
 }
