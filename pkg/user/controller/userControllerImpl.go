@@ -1,11 +1,14 @@
 package controller
 
 import (
-	"hewhew-backend/pkg/user/model"
+	"fmt"
 	"hewhew-backend/entities"
+	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -93,6 +96,13 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 
 func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Params("username")
+
+	token := ctx.Locals("jwt").(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+	userID := claims["user_id"].(string)
+
+	fmt.Println("userID from token:", userID)
+
 	userEntity, err := c.userService.GetUserByUsername(username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -109,32 +119,30 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	return ctx.JSON(user)
 }
 
-
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
-    id := ctx.Params("id")
-    userUUID, err := uuid.Parse(id)
-    if err != nil {
-        return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
-    }
+	id := ctx.Params("id")
+	userUUID, err := uuid.Parse(id)
+	if err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
+	}
 
-    var body model.EditUserRequest
-    if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(400).JSON(fiber.Map{"error": "Invalid request"})
-    }
+	var body model.EditUserRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+	}
 
-    body.UserID = userUUID
+	body.UserID = userUUID
 
-    u := &entities.User{
-        UserID: userUUID,
-        FName:  body.FName,
-        LName:  body.LName,
-        Gender: body.Gender,
-    }
+	u := &entities.User{
+		UserID: userUUID,
+		FName:  body.FName,
+		LName:  body.LName,
+		Gender: body.Gender,
+	}
 
-    if err := c.userService.EditUser(u.UserID.String(), u); err != nil {
-        return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
-    }
+	if err := c.userService.EditUser(u.UserID.String(), u); err != nil {
+		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
 
-    return ctx.JSON(fiber.Map{"message": "User updated successfully"})
+	return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
-

@@ -4,6 +4,7 @@ import (
 	_userController "hewhew-backend/pkg/user/controller"
 	_userRepository "hewhew-backend/pkg/user/repository"
 	_userService "hewhew-backend/pkg/user/service"
+	"hewhew-backend/utils"
 )
 
 func (s *fiberServer) initUserRouter() {
@@ -12,9 +13,10 @@ func (s *fiberServer) initUserRouter() {
 	userController := _userController.NewUserControllerImpl(userService)
 
 	userGroup := s.app.Group("/v1/user")
-	userGroup.Get("/:username", userController.GetUserByUsername)
 	userGroup.Post("/register", userController.CreateUser)
 	userGroup.Post("/login", userController.LoginUser)
-	userGroup.Put("/:id", userController.EditUser)
 
+	userGroup.Use(utils.JWTProtected())
+	userGroup.Get("/:username", userController.GetUserByUsername)
+	userGroup.Put("/:id", userController.EditUser)
 }
