@@ -65,6 +65,45 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		"message": "User created successfully",
 	})
 }
+
+func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
+	image, err := ctx.FormFile("Image")
+	if err != nil || image == nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Image file is required",
+		})
+	}
+
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	userID := claims["user_id"].(string)
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
+	imageModel, err := utils.PreprocessUploadImage(image)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to preprocess image",
+		})
+	}
+
+	err = c.userService.EditUserProfileImage(userUUID, imageModel)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
+}
+
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest model.LoginRequest
 	if err := ctx.BodyParser(&loginRequest); err != nil {
@@ -93,20 +132,36 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 		"token": token,
 	})
 }
-
-func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
-	username := ctx.Params("username")
-
+func getClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
 	token := ctx.Locals("jwt").(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract claims from token")
+	}
+	return claims, nil
+}
+
+func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
+
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	userID := claims["user_id"].(string)
 
 	fmt.Println("userID from token:", userID)
-
-	userEntity, err := c.userService.GetUserByUsername(username)
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
+	userEntity, err := c.userService.GetUserByUserID(userUUID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve username",
+			"error": "Failed to retrieve user",
 		})
 	}
 	user := &model.UserDetailResponse{
@@ -140,7 +195,7 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 		Gender: body.Gender,
 	}
 
-	if err := c.userService.EditUser(u.UserID.String(), u); err != nil {
+	if err := c.userService.EditUser(u.UserID, u); err != nil {
 		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 
