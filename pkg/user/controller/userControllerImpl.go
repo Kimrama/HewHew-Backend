@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type UserControllerImpl struct {
@@ -139,30 +140,35 @@ func (c *UserControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
-    id := ctx.Params("id")
-    userUUID, err := uuid.Parse(id)
-    if err != nil {
-        return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
+    // ✅ ดึง claims ที่ middleware ใส่ไว้
+    raw := ctx.Locals("claims")
+    if raw == nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+    }
+    claims := raw.(jwt.MapClaims)
+
+    tokenUserID, ok := claims["user_id"].(string)
+    if !ok || tokenUserID == "" {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
     }
 
     var body model.EditUserRequest
     if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
     }
 
-    body.UserID = userUUID
-
     u := &entities.User{
-        UserID: userUUID,
+        UserID: uuid.MustParse(tokenUserID), // ใช้จาก token
         FName:  body.FName,
         LName:  body.LName,
         Gender: body.Gender,
     }
 
-    if err := c.userService.EditUser(u.UserID.String(), u); err != nil {
-        return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+    if err := c.userService.EditUser(tokenUserID, u); err != nil {
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
     }
 
     return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
+
 

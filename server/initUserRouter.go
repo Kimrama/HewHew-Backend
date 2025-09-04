@@ -4,6 +4,7 @@ import (
 	_userController "hewhew-backend/pkg/user/controller"
 	_userRepository "hewhew-backend/pkg/user/repository"
 	_userService "hewhew-backend/pkg/user/service"
+	_usermiddleware "hewhew-backend/server/middleware"
 )
 
 func (s *fiberServer) initUserRouter() {
@@ -16,5 +17,5 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Post("/register", userController.CreateUser)
 	userGroup.Post("/login", userController.LoginUser)
 	userGroup.Put("/:id/profile-image", userController.EditUserProfileImage)
-	userGroup.Put("/:id", userController.EditUser)
+	userGroup.Put("/profile", _usermiddleware.AuthRequired(), userController.EditUser)
 }
