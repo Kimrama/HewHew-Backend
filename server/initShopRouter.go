@@ -12,5 +12,5 @@ func (s *fiberServer) initShopRouter() {
 	shopController := _shopController.NewShopControllerImpl(shopService)
 
 	shopGroup := s.app.Group("/v1/shop")
-	shopGroup.Post("/", shopController.createShop)
+	shopGroup.Post("/canteens", shopController.CreateCanteen)
 }

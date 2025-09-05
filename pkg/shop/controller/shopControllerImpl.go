@@ -16,6 +16,7 @@ func NewShopControllerImpl(ShopService service.ShopService) ShopController {
     }
 }
 
-func (s *ShopControllerImpl) createShop(ctx *fiber.Ctx) error {
+func (s *ShopControllerImpl) CreateCanteen(ctx *fiber.Ctx) error {
     return nil
+    
 }
