@@ -1,9 +1,11 @@
 package service
 
 import (
+	"errors"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
+	"hewhew-backend/utils"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +18,14 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	return &UserServiceImpl{
 		userRepository: userRepository,
 	}
+}
+
+func (s *UserServiceImpl) EditUser(userID uuid.UUID, userEntity *entities.User) error {
+	if userEntity.FName == "" && userEntity.LName == "" && userEntity.Gender == "" {
+		return errors.New("no fields to update")
+	}
+	userEntity.UserID = userID
+	return s.userRepository.EditUser(userID, userEntity)
 }
 
 func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
@@ -44,6 +54,17 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 	return nil
 }
 
+func (s *UserServiceImpl) EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error {
+	err := s.userRepository.EditUserProfileImage(userID, imageModel)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
 	return s.userRepository.GetUserByUsername(username)
+}
+func (s *UserServiceImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, error) {
+	return s.userRepository.GetUserByUserID(userID)
 }

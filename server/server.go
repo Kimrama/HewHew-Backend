@@ -58,7 +58,8 @@ func (s *fiberServer) Start() {
 	// Initialize routes
 	s.initMiscellaneousRoutes()
 	s.initUserRouter()
-
+	s.initShopRouter()
+	
 	s.Listen()
 
 }
