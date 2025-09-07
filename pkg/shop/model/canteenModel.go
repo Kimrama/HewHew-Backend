@@ -1,7 +1,7 @@
 package model
 
-type CreateCanteenRequest struct {
-	CanteenName string
-	Latitude    string
-	Longitude   string
+type CanteenRequest struct {
+	CanteenName string `json:"canteen_name"`
+	Latitude    string `json:"latitude"`
+	Longitude   string `json:"longitude"`
 }

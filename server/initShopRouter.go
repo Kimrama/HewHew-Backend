@@ -7,10 +7,14 @@ import (
 )
 
 func (s *fiberServer) initShopRouter() {
-	shopRepository := _shopRepository.NewShopRepositoryImpl(s.db)
-	shopService := _shopService.NewShopServiceImpl(shopRepository)
-	shopController := _shopController.NewShopControllerImpl(shopService)
+    shopRepository := _shopRepository.NewShopRepositoryImpl(s.db, s.conf.Supabase)
+    shopService := _shopService.NewShopServiceImpl(shopRepository)
+    shopController := _shopController.NewShopControllerImpl(shopService)
 
-	shopGroup := s.app.Group("/v1/shop")
-	shopGroup.Post("/canteens", shopController.CreateCanteen)
+    shopGroup := s.app.Group("/v1/shop")
+
+    canteenGroup := shopGroup.Group("/canteens")
+    canteenGroup.Post("/", shopController.CreateCanteen)
+    canteenGroup.Put("/:canteenName", shopController.EditCanteen)
+    // canteenGroup.Delete("/:canteenName", shopController.DeleteCanteen)
 }

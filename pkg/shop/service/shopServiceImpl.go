@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"hewhew-backend/entities"
 	"hewhew-backend/pkg/shop/repository"
 )
 
@@ -17,14 +19,13 @@ func (s *ShopServiceImpl) CreateCanteen(canteenModel interface{}) error {
     return s.ShopRepository.CreateCanteen(canteenModel)
 }   
 
-func (s *ShopServiceImpl) EditCanteen(canteenModel interface{}) error {
-    return nil
+func (s *ShopServiceImpl) EditCanteen(canteenName string,canteenEntity *entities.Canteen) error {
+    if canteenName == "" {
+        return fmt.Errorf("canteen name is required")
+    }
+    return s.ShopRepository.EditCanteen(canteenName,canteenEntity)
 }
 
 func (s *ShopServiceImpl) DeleteCanteen(canteenID string) error {
     return nil
-}
-
-func (s *ShopServiceImpl) GetCanteens() (interface{}, error) {
-    return nil, nil
 }

@@ -6,5 +6,4 @@ type ShopController interface {
 	CreateCanteen(ctx *fiber.Ctx) error
 	EditCanteen(ctx *fiber.Ctx) error
 	DeleteCanteen(ctx *fiber.Ctx) error
-	GetCanteens(ctx *fiber.Ctx) error
 }

@@ -1,14 +1,18 @@
 package repository
 
 import (
+	"hewhew-backend/config"
 	"hewhew-backend/database"
+	"hewhew-backend/entities"
 )
 type ShopRepositoryImpl struct {
     db database.Database
+    supabaseConfig *config.Supabase
 }
-func NewShopRepositoryImpl(db database.Database) ShopRepository {
+func NewShopRepositoryImpl(db database.Database, supabaseConfig *config.Supabase) ShopRepository {
 return &ShopRepositoryImpl{
     db: db,
+    supabaseConfig: supabaseConfig,
 }
 }
 
@@ -16,17 +20,18 @@ func (r *ShopRepositoryImpl) CreateCanteen(canteenModel interface{}) error {
    return r.db.Connect().Create(canteenModel).Error
 }   
 
-func (r *ShopRepositoryImpl) EditCanteen(canteenModel interface{}) error {
-    // Implement the logic to edit a canteen in the database
-    return nil
+func (r *ShopRepositoryImpl) EditCanteen(canteenName string,canteen *entities.Canteen) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Canteen{}).
+		Where("canteen_name = ?", canteenName).
+		Updates(map[string]interface{}{
+			"latitude": canteen.Latitude,
+			"longitude": canteen.Longitude,
+		}).Error
+	return err
 }
 
 func (r *ShopRepositoryImpl) DeleteCanteen(canteenID string) error {
-    // Implement the logic to delete a canteen from the database
     return nil
 }
 
-func (r *ShopRepositoryImpl) GetCanteens() (interface{}, error) {
-    // Implement the logic to retrieve canteens from the database
-    return nil, nil
-}

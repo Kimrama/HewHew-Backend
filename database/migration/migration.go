@@ -15,12 +15,14 @@ func Migrate(db database.Database) {
 	UserMigration(tx)
 	ShopMigration(tx)
 	WasteDropMigration(tx)
+	CanteenMigration(tx)
 	// ==========
 
 	// entities relate with base by FK
 	ContactMigration(tx)
 	TopUpMigration(tx)
 	ShopAdminMigration(tx)
+	TagMigration(tx)
 	MenuMigration(tx)
 	// ==========
 
@@ -100,4 +102,12 @@ func NotificationMigration(tx *gorm.DB) error {
 func TransactionLogMigration(tx *gorm.DB) error {
 	fmt.Println("Migrating TransactionLog table...")
 	return tx.Migrator().CreateTable(&entities.TransactionLog{})
+}
+func CanteenMigration(tx *gorm.DB) error {
+	fmt.Println("Migrating Canteen table...")
+	return tx.Migrator().CreateTable(&entities.Canteen{})
+}
+func TagMigration(tx *gorm.DB) error {
+	fmt.Println("Migrating Tag table...")
+	return tx.Migrator().CreateTable(&entities.Tag{})
 }
