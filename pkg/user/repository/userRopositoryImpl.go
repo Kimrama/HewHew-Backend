@@ -31,6 +31,10 @@ func (r *UserRepositoryImpl) CreateUser(userModel *entities.User) error {
 	return r.db.Connect().Create(userModel).Error
 }
 
+func (r *UserRepositoryImpl) CreateAdmin(adminModel *entities.ShopAdmin) error {
+	return r.db.Connect().Create(adminModel).Error
+}	
+
 func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
 	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
 
@@ -130,4 +134,14 @@ func (r *UserRepositoryImpl) EditUser(userID uuid.UUID, user *entities.User) err
 			"gender": user.Gender,
 		}).Error
 	return err
+}
+
+
+func (r *UserRepositoryImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
+	var admin entities.ShopAdmin
+	db := r.db.Connect()
+	if err := db.Where("username = ?", username).First(&admin).Error; err != nil {
+		return nil, err
+	}
+	return &admin, nil
 }
