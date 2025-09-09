@@ -53,5 +53,10 @@ func (s *fiberServer) initMiscellaneousRoutes() {
 			"name": "Boat",
 		}))
 	})
+	router.Get("/Test", func(c *fiber.Ctx) error {
+		return c.JSON((fiber.Map{
+			"name": "Test",
+		}))
+	})
 
 }
