@@ -175,27 +175,27 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
-    // ใช้ helper
-    claims, err := getClaimsFromToken(ctx)
-    if err != nil {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
+	// ใช้ helper
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-    tokenUserID, ok := claims["user_id"].(string)
-    if !ok || tokenUserID == "" {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-            "error": "invalid token",
-        })
-    }
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
 
-    var body model.EditUserRequest
-    if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid request",
-        })
-    }
+	var body model.EditUserRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
 
 	userUUID, err := uuid.Parse(tokenUserID)
 	if err != nil {
@@ -217,10 +217,5 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-    return ctx.JSON(fiber.Map{"message": "User updated successfully"})
+	return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
-	id := ctx.Params("id")
-	userUUID, err := uuid.Parse(id)
-	if err != nil {
-		return ctx.Status(400).JSON(fiber.Map{"error": "invalid user id"})
-	}
