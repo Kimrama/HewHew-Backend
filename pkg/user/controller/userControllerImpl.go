@@ -23,12 +23,12 @@ func NewUserControllerImpl(userService service.UserService) UserController {
 }
 
 func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
-	password := ctx.FormValue("Password")
-	username := ctx.FormValue("Username")
-	fname := ctx.FormValue("FName")
-	lname := ctx.FormValue("LName")
-	gender := ctx.FormValue("Gender")
-	image, _ := ctx.FormFile("Image")
+	password := ctx.FormValue("password")
+	username := ctx.FormValue("username")
+	fname := ctx.FormValue("fname")
+	lname := ctx.FormValue("lname")
+	gender := ctx.FormValue("gender")
+	image, _ := ctx.FormFile("image")
 
 	var imageModel *utils.ImageModel
 	if image != nil {
@@ -54,6 +54,7 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		Gender:   gender,
 		Image:    imageModel,
 	}
+	fmt.Println(userModel.Username)
 
 	if err := c.userService.CreateUser(userModel); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -114,7 +115,7 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 	user, err := c.userService.GetUserByUsername(loginRequest.Username)
 	if err != nil || user == nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid username or password",
+			"error": "Invalid username or password" + err.Error(),
 		})
 	}
 	if !utils.CompareHashPassword(user.Password, loginRequest.Password) {
@@ -175,27 +176,27 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
-    // ใช้ helper
-    claims, err := getClaimsFromToken(ctx)
-    if err != nil {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
+	// ใช้ helper
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-    tokenUserID, ok := claims["user_id"].(string)
-    if !ok || tokenUserID == "" {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-            "error": "invalid token",
-        })
-    }
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
 
-    var body model.EditUserRequest
-    if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid request",
-        })
-    }
+	var body model.EditUserRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
 
 	userUUID, err := uuid.Parse(tokenUserID)
 	if err != nil {
@@ -217,5 +218,73 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-    return ctx.JSON(fiber.Map{"message": " User updated successfully "})
+	return ctx.JSON(fiber.Map{"message": "User updated successfully"})
+}
+
+
+
+func (c *UserControllerImpl) CreateAdmin(ctx *fiber.Ctx) error {
+	password := ctx.FormValue("password")
+	username := ctx.FormValue("username")
+	fname := ctx.FormValue("fname")
+	lname := ctx.FormValue("lname")
+
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to hash password",
+		})
+	}
+	AdminModel := &model.CreateAdminRequest{
+		Username: username,
+		Password: hashedPassword,
+		FName:    fname,
+		LName:    lname,
+	}
+	fmt.Println(AdminModel.Username)
+
+	if err := c.userService.CreateAdmin(AdminModel); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "User created successfully",
+	})
+}
+
+
+
+func (c *UserControllerImpl) LoginShopAdmin(ctx *fiber.Ctx) error {
+	var req model.ShopAdminLoginRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request",
+		})
+	}
+
+	admin, err := c.userService.GetShopAdminByUsername(req.Username)
+	if err != nil || admin == nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+
+	if !utils.CompareHashPassword(admin.Password, req.Password) {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
+	}
+
+	token, err := utils.GenerateJWT(admin.AdminID, admin.Username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to generate token",
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"token": token,
+	})
 }
