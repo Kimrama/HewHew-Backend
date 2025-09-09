@@ -75,6 +75,18 @@ func (s *ShopControllerImpl) EditCanteen(ctx *fiber.Ctx) error {
 
 
 func (s *ShopControllerImpl) DeleteCanteen(ctx *fiber.Ctx) error {
-    return nil
+    canteenName := ctx.Params("canteenName")
+    decodedName, err := url.PathUnescape(canteenName)
+    if err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "invalid canteen name",
+        })
+    }
+    if err := s.ShopService.DeleteCanteen(decodedName); err != nil {
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": err.Error(),
+        })
+    }
+    return ctx.JSON(fiber.Map{"message": "Canteen deleted successfully"})
 }
 
