@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	CreateUser(userEntity *entities.User) error
 	CreateAdmin(adminModel *entities.ShopAdmin) error
+	CreateShop(shopEntity *entities.Shop) error
 	UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error)
 	GetUserByUsername(username string) (*entities.User, error)
 	GetUserByUserID(userID uuid.UUID) (*entities.User, error)

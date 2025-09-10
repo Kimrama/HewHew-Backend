@@ -35,6 +35,10 @@ func (r *UserRepositoryImpl) CreateAdmin(adminModel *entities.ShopAdmin) error {
 	return r.db.Connect().Create(adminModel).Error
 }	
 
+func (r *UserRepositoryImpl) CreateShop(shopEntity *entities.Shop) error {
+	return r.db.Connect().Create(shopEntity).Error
+}
+
 func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
 	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
 
