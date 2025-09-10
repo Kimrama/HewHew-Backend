@@ -56,6 +56,17 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 }
 
 func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error {
+	
+	ShopEntity := &entities.Shop{
+		ShopID:      uuid.New(),
+        Name:        "Default Shop Name",
+        Address:     "Default Address",
+        CanteenName: "Default Canteen",
+	}
+
+	if err := s.userRepository.CreateShop(ShopEntity); err != nil {
+		return err
+	}
 
 	AdminEntity := &entities.ShopAdmin{
 		AdminID:         uuid.New(),
@@ -63,6 +74,7 @@ func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error
 		Password:        userModel.Password,
 		FName:           userModel.FName,
 		LName:           userModel.LName,
+		ShopID:          ShopEntity.ShopID,
 	}
 
 	if err := s.userRepository.CreateAdmin(AdminEntity); err != nil {
