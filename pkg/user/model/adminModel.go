@@ -5,4 +5,7 @@ type CreateAdminRequest struct {
 	Password string
 	FName    string
 	LName    string
+	name     string  
+	address  string   
+	canteen_name   string    
 }
