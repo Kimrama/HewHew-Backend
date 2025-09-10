@@ -221,13 +221,12 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "User updated successfully"})
 }
 
-
-
 func (c *UserControllerImpl) CreateAdmin(ctx *fiber.Ctx) error {
 	password := ctx.FormValue("password")
 	username := ctx.FormValue("username")
 	fname := ctx.FormValue("fname")
 	lname := ctx.FormValue("lname")
+
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
@@ -254,10 +253,8 @@ func (c *UserControllerImpl) CreateAdmin(ctx *fiber.Ctx) error {
 	})
 }
 
-
-
 func (c *UserControllerImpl) LoginShopAdmin(ctx *fiber.Ctx) error {
-	var req model.ShopAdminLoginRequest
+	var req model.ShopAdminLoginRequest_and_Shop
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request",
