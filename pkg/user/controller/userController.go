@@ -10,4 +10,8 @@ type UserController interface {
 	EditUserProfileImage(ctx *fiber.Ctx) error
 	LoginShopAdmin(ctx *fiber.Ctx) error
 	CreateAdmin(ctx *fiber.Ctx) error
+	EditShop(ctx *fiber.Ctx) error
+	GetShop(ctx *fiber.Ctx) error
+	ChangeState(ctx *fiber.Ctx) error
+	EditShopImage(ctx *fiber.Ctx) error
 }

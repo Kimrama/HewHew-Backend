@@ -24,4 +24,9 @@ func (s *fiberServer) initUserRouter() {
 	adminGroup.Post("/login", userController.LoginShopAdmin)
 	adminGroup.Post("/register", userController.CreateAdmin)
 	adminGroup.Use(utils.JWTProtected())
+	adminGroup.Put("/shop", userController.EditShop)
+	adminGroup.Get("/getshop", userController.GetShop)
+	adminGroup.Put("/changestate", userController.ChangeState)
+	adminGroup.Put("/shopimg", userController.EditShopImage)
+
 }

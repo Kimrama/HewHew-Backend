@@ -39,6 +39,33 @@ func (r *UserRepositoryImpl) CreateShop(shopEntity *entities.Shop) error {
 	return r.db.Connect().Create(shopEntity).Error
 }
 
+func (r *UserRepositoryImpl) UploadShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) (string, error) {
+	customName := shopID.String() + "_" + fmt.Sprintf("%d", time.Now().Unix())
+
+	mimeType := mime.TypeByExtension(imageModel.Ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	url := fmt.Sprintf("%s/storage/v1/object/images/shopProfile/%s", r.supabaseConfig.URL, customName)
+	req, _ := http.NewRequest("POST", url, bytes.NewReader(imageModel.Body))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+	req.Header.Set("Content-Type", mimeType)
+	
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to upload image: %s", resp.Status)
+	}
+	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/shopProfile/%s", r.supabaseConfig.URL, customName)
+	return publicURL, nil
+}
+
 func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
 	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
 
@@ -110,6 +137,51 @@ func (r *UserRepositoryImpl) EditUserProfileImage(userID uuid.UUID, imageModel *
 	return nil
 }
 
+func (r *UserRepositoryImpl) EditShopImage(adminID uuid.UUID, imageModel *utils.ImageModel) error {
+    db := r.db.Connect()
+
+	fmt.Println("Admin ID in EditShopImage:", adminID)
+
+    shop, err := r.GetShopByAdminID(adminID)
+    if err != nil {
+        return err
+    }
+
+    if shop.ImageURL != "" && shop.ImageURL != "NULL" {
+        publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+        objectPath := strings.TrimPrefix(shop.ImageURL, publicPrefixRender)
+
+        deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
+
+        req, _ := http.NewRequest("DELETE", deleteURL, nil)
+        req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+        client := &http.Client{}
+        resp, err := client.Do(req)
+        if err != nil {
+            return err
+        }
+        defer resp.Body.Close()
+
+        if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+            return fmt.Errorf("failed to delete image: %s", resp.Status)
+        }
+    }
+
+    newImageURL, err := r.UploadShopImage(shop.ShopID, imageModel) // <- (string, error)
+    if err != nil {
+        return err
+    }
+
+    if err := db.Model(&entities.Shop{}).
+        Where("shop_id = ?", shop.ShopID).
+        Update("image_url", newImageURL).Error; err != nil { 
+        return err
+    }
+
+    return nil
+}
+
 func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
 	var user entities.User
 	db := r.db.Connect()
@@ -127,6 +199,44 @@ func (r *UserRepositoryImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, 
 	}
 	return &user, nil
 }
+
+func (r *UserRepositoryImpl) ChangeState(shopID uuid.UUID, state bool) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Shop{}).
+		Where("shop_id = ?", shopID).
+		Update("state", state).Error
+	return err
+}
+
+func (r *UserRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
+	// ดึง ShopID จากตาราง ShopAdmin
+	var admin entities.ShopAdmin
+	db := r.db.Connect()
+
+	if err := db.Select("shop_id").First(&admin, "admin_id = ?", adminID).Error; err != nil {
+		return nil, err
+	}
+	var shop entities.Shop
+	if err := db.First(&shop, "shop_id = ?", admin.ShopID).Error; err != nil {
+		return nil, err
+	}
+	return &shop, nil
+}
+
+
+
+func (r *UserRepositoryImpl) EditShop(shopID uuid.UUID, shop *entities.Shop) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Shop{}).
+		Where("shop_id = ?", shopID).
+		Updates(map[string]interface{}{
+			"name":         shop.Name,
+			"canteen_name": shop.CanteenName,
+			"address":      shop.Address,
+		}).Error
+	return err
+}
+
 
 func (r *UserRepositoryImpl) EditUser(userID uuid.UUID, user *entities.User) error {
 	db := r.db.Connect()
@@ -149,3 +259,5 @@ func (r *UserRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 	}
 	return &admin, nil
 }
+
+

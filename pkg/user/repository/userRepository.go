@@ -17,6 +17,11 @@ type UserRepository interface {
 	EditUser(userID uuid.UUID, user *entities.User) error
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
+	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
+	EditShop(shopID uuid.UUID, shop *entities.Shop) error
+	ChangeState(shopID uuid.UUID, state bool) error
+	EditShopImage(AdminID uuid.UUID, imageModel *utils.ImageModel) error
+	UploadShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) (string, error)
 }
 
 

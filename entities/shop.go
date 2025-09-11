@@ -10,4 +10,5 @@ type Shop struct {
 	Menus    []Menu    `gorm:"foreignKey:ShopID"`
 	Tags      []Tag    `gorm:"foreignKey:ShopID"`
 	CanteenName string `gorm:"not null;index:idx_canteen_shop"`
+	State     bool     `gorm:"not null;default:true"`
 }
