@@ -38,7 +38,7 @@ func NewFiberServer(conf *config.Config, db database.Database) *fiberServer {
 func getCORSMiddleware(allowOrigins []string) fiber.Handler {
 	return cors.New(cors.Config{
 		AllowOrigins: strings.Join(allowOrigins, ","),
-		AllowHeaders: "Origin, Content-Type, Accept Authorization",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	})
 }
