@@ -21,6 +21,14 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	}
 }
 
+func (s *UserServiceImpl) EditShop(shopID uuid.UUID, shopEntity *entities.Shop) error {
+	if shopEntity.Name == "" && shopEntity.Address == "" && shopEntity.CanteenName == "" {
+		return errors.New("no fields to update")
+	}
+	shopEntity.ShopID = shopID
+	return s.userRepository.EditShop(shopID, shopEntity)
+}
+
 func (s *UserServiceImpl) EditUser(userID uuid.UUID, userEntity *entities.User) error {
 	if userEntity.FName == "" && userEntity.LName == "" && userEntity.Gender == "" {
 		return errors.New("no fields to update")
@@ -56,6 +64,17 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 }
 
 func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error {
+	
+	ShopEntity := &entities.Shop{
+		ShopID:      uuid.New(),
+        Name:        "Default Shop Name",
+        Address:     "Default Address",
+        CanteenName: "Default Canteen",
+	}
+
+	if err := s.userRepository.CreateShop(ShopEntity); err != nil {
+		return err
+	}
 
 	AdminEntity := &entities.ShopAdmin{
 		AdminID:         uuid.New(),
@@ -63,6 +82,7 @@ func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error
 		Password:        userModel.Password,
 		FName:           userModel.FName,
 		LName:           userModel.LName,
+		ShopID:          ShopEntity.ShopID,
 	}
 
 	if err := s.userRepository.CreateAdmin(AdminEntity); err != nil {
@@ -80,6 +100,14 @@ func (s *UserServiceImpl) EditUserProfileImage(userID uuid.UUID, imageModel *uti
 	return nil
 }
 
+func (s *UserServiceImpl) EditShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) error {
+    err := s.userRepository.EditShopImage(shopID, imageModel)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
 	return s.userRepository.GetUserByUsername(username)
 }
@@ -87,7 +115,16 @@ func (s *UserServiceImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, err
 	return s.userRepository.GetUserByUserID(userID)
 }
 
-
 func (s *UserServiceImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
 	return s.userRepository.GetShopAdminByUsername(username)
 }
+
+func (s *UserServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
+    return s.userRepository.GetShopByAdminID(adminID)
+}
+
+func (s *UserServiceImpl) ChangeState(shopID uuid.UUID, state bool) error {
+	return s.userRepository.ChangeState(shopID, state)
+}
+
+

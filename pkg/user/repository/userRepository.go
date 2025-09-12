@@ -10,12 +10,18 @@ import (
 type UserRepository interface {
 	CreateUser(userEntity *entities.User) error
 	CreateAdmin(adminModel *entities.ShopAdmin) error
+	CreateShop(shopEntity *entities.Shop) error
 	UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error)
 	GetUserByUsername(username string) (*entities.User, error)
 	GetUserByUserID(userID uuid.UUID) (*entities.User, error)
 	EditUser(userID uuid.UUID, user *entities.User) error
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
+	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
+	EditShop(shopID uuid.UUID, shop *entities.Shop) error
+	ChangeState(shopID uuid.UUID, state bool) error
+	EditShopImage(AdminID uuid.UUID, imageModel *utils.ImageModel) error
+	UploadShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) (string, error)
 }
 
 
