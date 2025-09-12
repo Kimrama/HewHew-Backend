@@ -11,36 +11,39 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	"github.com/google/uuid"
 )
+
 type ShopRepositoryImpl struct {
-    db database.Database
-    supabaseConfig *config.Supabase
+	db             database.Database
+	supabaseConfig *config.Supabase
 }
+
 func NewShopRepositoryImpl(db database.Database, supabaseConfig *config.Supabase) ShopRepository {
-return &ShopRepositoryImpl{
-    db: db,
-    supabaseConfig: supabaseConfig,
-}
+	return &ShopRepositoryImpl{
+		db:             db,
+		supabaseConfig: supabaseConfig,
+	}
 }
 
 func (r *ShopRepositoryImpl) CreateCanteen(canteenModel interface{}) error {
-   return r.db.Connect().Create(canteenModel).Error
-}   
+	return r.db.Connect().Create(canteenModel).Error
+}
 
-func (r *ShopRepositoryImpl) EditCanteen(canteenName string,canteen *entities.Canteen) error {
+func (r *ShopRepositoryImpl) EditCanteen(canteenName string, canteen *entities.Canteen) error {
 	db := r.db.Connect()
 	err := db.Model(&entities.Canteen{}).
 		Where("canteen_name = ?", canteenName).
 		Updates(map[string]interface{}{
-			"latitude": canteen.Latitude,
+			"latitude":  canteen.Latitude,
 			"longitude": canteen.Longitude,
 		}).Error
 	return err
 }
 
 func (r *ShopRepositoryImpl) DeleteCanteen(canteenID string) error {
-    return nil
+	return nil
 }
 
 func (r *ShopRepositoryImpl) EditShop(body entities.Shop, shop uuid.UUID) error {
@@ -63,7 +66,6 @@ func (r *ShopRepositoryImpl) ChangeState(state bool, shopID uuid.UUID) error {
 	return err
 }
 
-
 func (r *ShopRepositoryImpl) UploadShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) (string, error) {
 	customName := shopID.String() + "_" + fmt.Sprintf("%d", time.Now().Unix())
 
@@ -76,7 +78,7 @@ func (r *ShopRepositoryImpl) UploadShopImage(shopID uuid.UUID, imageModel *utils
 	req, _ := http.NewRequest("POST", url, bytes.NewReader(imageModel.Body))
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
 	req.Header.Set("Content-Type", mimeType)
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -107,48 +109,48 @@ func (r *ShopRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop
 }
 
 func (r *ShopRepositoryImpl) EditShopImage(adminID uuid.UUID, imageModel *utils.ImageModel) error {
-    db := r.db.Connect()
+	db := r.db.Connect()
 
 	fmt.Println("Admin ID in EditShopImage:", adminID)
 
-    shop, err := r.GetShopByAdminID(adminID)
-    if err != nil {
-        return err
-    }
+	shop, err := r.GetShopByAdminID(adminID)
+	if err != nil {
+		return err
+	}
 
-    if shop.ImageURL != "" && shop.ImageURL != "NULL" {
-        publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
-        objectPath := strings.TrimPrefix(shop.ImageURL, publicPrefixRender)
+	if shop.ImageURL != "" && shop.ImageURL != "NULL" {
+		publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+		objectPath := strings.TrimPrefix(shop.ImageURL, publicPrefixRender)
 
-        deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
+		deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
 
-        req, _ := http.NewRequest("DELETE", deleteURL, nil)
-        req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+		req, _ := http.NewRequest("DELETE", deleteURL, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
 
-        client := &http.Client{}
-        resp, err := client.Do(req)
-        if err != nil {
-            return err
-        }
-        defer resp.Body.Close()
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 
-        if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-            return fmt.Errorf("failed to delete image: %s", resp.Status)
-        }
-    }
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			return fmt.Errorf("failed to delete image: %s", resp.Status)
+		}
+	}
 
-    newImageURL, err := r.UploadShopImage(shop.ShopID, imageModel) // <- (string, error)
-    if err != nil {
-        return err
-    }
+	newImageURL, err := r.UploadShopImage(shop.ShopID, imageModel) // <- (string, error)
+	if err != nil {
+		return err
+	}
 
-    if err := db.Model(&entities.Shop{}).
-        Where("shop_id = ?", shop.ShopID).
-        Update("image_url", newImageURL).Error; err != nil { 
-        return err
-    }
+	if err := db.Model(&entities.Shop{}).
+		Where("shop_id = ?", shop.ShopID).
+		Update("image_url", newImageURL).Error; err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 func (r *ShopRepositoryImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
@@ -160,3 +162,11 @@ func (r *ShopRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 	return &admin, nil
 }
 
+func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
+	var canteens []entities.Canteen
+	db := r.db.Connect()
+	if err := db.Find(&canteens).Error; err != nil {
+		return nil, err
+	}
+	return canteens, nil
+}
