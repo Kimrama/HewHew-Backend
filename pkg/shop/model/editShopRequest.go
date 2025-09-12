@@ -1,3 +1,4 @@
+
 package model
 
 type EditShopRequest struct {
