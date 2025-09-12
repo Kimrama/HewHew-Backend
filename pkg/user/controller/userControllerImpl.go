@@ -7,7 +7,6 @@ import (
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -105,66 +104,6 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
-}
-
-func (c *UserControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
-	
-	image, err := ctx.FormFile("Image")
-	if err != nil || image == nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Image file is required",
-		})
-	}
-
-	claims, err := getClaimsFromToken(ctx)
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	tokenUserID, ok := claims["user_id"].(string)
-	if !ok || tokenUserID == "" {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "invalid token",
-		})
-	}
-
-
-	fmt.Println("userID from token:", tokenUserID)
-	shop, err := c.userService.GetShopByAdminID(uuid.MustParse(tokenUserID))
-	fmt.Println("Shop from DB:", shop)
-	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-	fmt.Println("Shop ID from DB:", shop.ShopID)
-
-	imageModel, err := utils.PreprocessUploadImage(image)
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to preprocess image",
-		})
-	}
-
-	adminUUID, err := uuid.Parse(tokenUserID)
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid admin id in token",
-		})
-	}
-
-	err = c.userService.EditShopImage(adminUUID, imageModel)
-	fmt.Print("After EditShopImage")
-	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-	
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Shop image updated successfully"})
 }
 
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
@@ -271,115 +210,6 @@ func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
     })
 }
 
-func (c *UserControllerImpl) ChangeState(ctx *fiber.Ctx) error {
-	var body model.ChangeState
-	if err := ctx.BodyParser(&body); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid request",
-		})
-	}
-	
-	claims, err := getClaimsFromToken(ctx)	
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	tokenUserID, ok := claims["user_id"].(string)
-	if !ok || tokenUserID == "" {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "invalid token",
-		})
-	}
-
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID in token",
-		})
-	}
-
-	admin, err := c.userService.GetShopAdminByUsername(claims["username"].(string))
-	if err != nil || admin == nil {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Admin not found",
-		})
-	}
-
-	var state bool
-	switch body.State {
-	case "open":
-		state = true
-	case "close":
-		state = false
-	default:
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid state value",
-		})
-	}
-
-	if err := c.userService.ChangeState(admin.ShopID, state); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return ctx.JSON(fiber.Map{"message": "Shop state updated successfully"})
-}
-
-
-func (c *UserControllerImpl) EditShop(ctx *fiber.Ctx) error {
-	claims, err := getClaimsFromToken(ctx)
-	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	tokenUserID, ok := claims["user_id"].(string)
-	if !ok || tokenUserID == "" {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "invalid token",
-		})
-	}
-
-	var body model.EditShopRequest
-	if err := ctx.BodyParser(&body); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid request",
-		})
-	}
-
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID in token",
-		})
-	}
-	shop := &entities.Shop{
-		Name:        body.Shop_Name,
-		CanteenName: body.Shop_CanteenName,
-		Address:     "Default Address",
-	}
-
-	fmt.Println(shop.Name)
-	fmt.Println(shop.CanteenName)
-	fmt.Println(shop.Address)
-	fmt.Println(claims["username"].(string))
-	admin, err := c.userService.GetShopAdminByUsername(claims["username"].(string))
-	if err != nil || admin == nil {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Admin not found",
-		})
-	}
-
-	if err := c.userService.EditShop(admin.ShopID, shop); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return ctx.JSON(fiber.Map{"message": "Shop updated successfully"})
-}
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 	// ใช้ helper
