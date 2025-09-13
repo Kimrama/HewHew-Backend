@@ -7,6 +7,7 @@ import (
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -177,40 +178,39 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 }
 
 func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
-    claims, err := getClaimsFromToken(ctx)
-    if err != nil {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
-    }
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+	}
 
-    userIDStr, _ := claims["user_id"].(string) // ✅ ใช้ user_id
-    if userIDStr == "" {
-        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "user token required"})
-    }
-    userID, err := uuid.Parse(userIDStr)
-    if err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user_id in token"})
-    }
+	userIDStr, _ := claims["user_id"].(string) // ✅ ใช้ user_id
+	if userIDStr == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "user token required"})
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user_id in token"})
+	}
 
 	fmt.Println("userID from token:", userID)
 
-    shop, err := c.userService.GetShopByAdminID(userID)
-    if err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "shop not found"})
-        }
-        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-    }
+	shop, err := c.userService.GetShopByAdminID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "shop not found"})
+		}
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	fmt.Println("Shop Name:", shop)
 	fmt.Println("Canteen Name:", shop.CanteenName)
 
-    return ctx.JSON(fiber.Map{
-        "name":         shop.Name,
-        "canteen_name": shop.CanteenName,
+	return ctx.JSON(fiber.Map{
+		"name":         shop.Name,
+		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
-    })
+	})
 }
-
 
 func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 	// ใช้ helper
@@ -263,7 +263,6 @@ func (c *UserControllerImpl) CreateAdmin(ctx *fiber.Ctx) error {
 	username := ctx.FormValue("username")
 	fname := ctx.FormValue("fname")
 	lname := ctx.FormValue("lname")
-
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {

@@ -164,7 +164,7 @@ func (r *ShopRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 
 func (r *ShopRepositoryImpl) CreateTag(tagModel *entities.Tag) error {
 	return r.db.Connect().Create(tagModel).Error
-
+}
 
 func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	var canteens []entities.Canteen
@@ -173,4 +173,25 @@ func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 		return nil, err
 	}
 	return canteens, nil
+}
+
+func (r *ShopRepositoryImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {
+    var tags []entities.Tag
+    db := r.db.Connect()
+    if err := db.
+        Where("shop_id = ? AND topic = ?", shopID, topic).
+        Find(&tags).Error; err != nil {
+        return nil, err
+    }
+    return tags, nil
+}
+
+func (r *ShopRepositoryImpl) EditTag(tagModel *entities.Tag) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Tag{}).
+		Where("tag_id = ?", tagModel.TagID).
+		Updates(map[string]interface{}{
+			"topic": tagModel.Topic,
+		}).Error
+	return err
 }
