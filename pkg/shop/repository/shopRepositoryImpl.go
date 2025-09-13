@@ -42,8 +42,11 @@ func (r *ShopRepositoryImpl) EditCanteen(canteenName string, canteen *entities.C
 	return err
 }
 
-func (r *ShopRepositoryImpl) DeleteCanteen(canteenID string) error {
-	return nil
+func (r *ShopRepositoryImpl) DeleteCanteen(canteenName string) error {
+	db := r.db.Connect()
+	err := db.Where("canteen_name = ?", canteenName).Delete(&entities.Canteen{}).Error
+	return err
+	
 }
 
 func (r *ShopRepositoryImpl) EditShop(body entities.Shop, shop uuid.UUID) error {

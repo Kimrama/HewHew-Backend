@@ -1,15 +1,16 @@
 package repository
 
 import (
-	"github.com/google/uuid"
 	"hewhew-backend/entities"
 	"hewhew-backend/utils"
+
+	"github.com/google/uuid"
 )
 
 type ShopRepository interface {
 	CreateCanteen(canteenModel interface{}) error
 	EditCanteen(canteenName string, canteenEntity *entities.Canteen) error
-	DeleteCanteen(canteenID string) error
+	DeleteCanteen(canteenName string) error
 	EditShop(body entities.Shop, shop uuid.UUID) error
 	ChangeState(state bool, shopID uuid.UUID) error
 	EditShopImage(AdminID uuid.UUID, imageModel *utils.ImageModel) error
