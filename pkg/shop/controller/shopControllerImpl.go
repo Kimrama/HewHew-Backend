@@ -84,7 +84,7 @@ func (s *ShopControllerImpl) DeleteCanteen(ctx *fiber.Ctx) error {
     return nil
 }
 
-func (c *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
+func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 	var body model.ChangeState
 	if err := ctx.BodyParser(&body); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -106,14 +106,14 @@ func (c *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 		})
 	}
 
-	admin, err := c.ShopService.GetShopAdminByUsername(claims["username"].(string))
+	admin, err := s.ShopService.GetShopAdminByUsername(claims["username"].(string))
 	if err != nil || admin == nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Admin not found",
 		})
 	}
 
-	if err := c.ShopService.ChangeState(body,admin.ShopID); err != nil {
+	if err := s.ShopService.ChangeState(body,admin.ShopID); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -123,7 +123,7 @@ func (c *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 }
 
 
-func (c *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
+func (s *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 	claims, err := getClaimsFromToken(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -144,7 +144,7 @@ func (c *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 			"error": "invalid request",
 		})
 	}
-    admin, err := c.ShopService.GetShopAdminByUsername(claims["username"].(string))
+    admin, err := s.ShopService.GetShopAdminByUsername(claims["username"].(string))
 
 	if err != nil || admin == nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -152,7 +152,7 @@ func (c *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 		})
 	}
 
-	if err := c.ShopService.EditShop(body, admin.ShopID); err != nil {
+	if err := s.ShopService.EditShop(body, admin.ShopID); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -162,7 +162,7 @@ func (c *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 }
 
 
-func (c *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
+func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
     claims, err := getClaimsFromToken(ctx)
     if err != nil {
         return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
@@ -179,7 +179,7 @@ func (c *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
 
 	fmt.Println("userID from token:", userID)
 
-    shop, err := c.ShopService.GetShopByAdminID(userID)
+    shop, err := s.ShopService.GetShopByAdminID(userID)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "shop not found"})
@@ -193,10 +193,11 @@ func (c *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
     return ctx.JSON(fiber.Map{
         "name":         shop.Name,
         "canteen_name": shop.CanteenName,
+		"shopimg":      shop.ImageURL,
     })
 }
 
-func (c *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
+func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 	
 	image, err := ctx.FormFile("Image")
 	if err != nil || image == nil {
@@ -221,7 +222,7 @@ func (c *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 
 
 	fmt.Println("userID from token:", tokenUserID)
-	shop, err := c.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
+	shop, err := s.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
 	fmt.Println("Shop from DB:", shop)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -244,7 +245,7 @@ func (c *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = c.ShopService.EditShopImage(adminUUID, imageModel)
+	err = s.ShopService.EditShopImage(adminUUID, imageModel)
 	fmt.Print("After EditShopImage")
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -263,4 +264,43 @@ func getClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
 		return nil, fmt.Errorf("failed to extract claims from token")
 	}
 	return claims, nil
+}
+
+func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+
+	shop, err := s.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var body model.TagCreateRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	err = s.ShopService.CreateTag(shop.ShopID.String(), &body)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.JSON(fiber.Map{"message": "Tag created successfully"})
+	
 }
