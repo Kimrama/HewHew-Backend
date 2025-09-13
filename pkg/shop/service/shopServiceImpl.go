@@ -99,6 +99,25 @@ func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest)
 func (s *ShopServiceImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
 	return s.ShopRepository.GetShopAdminByUsername(username)
 }
+
 func (s *ShopServiceImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	return s.ShopRepository.GetAllCanteens()
+}
+
+func (s *ShopServiceImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {
+    return s.ShopRepository.GetTagsByShopIDAndTopic(shopID, topic)
+}
+
+func (s *ShopServiceImpl) EditTag(tagID string, topic string) error {
+	tagUUID, err := uuid.Parse(tagID)
+	if err != nil {
+		return fmt.Errorf("invalid TagID: %v", err)
+	}
+
+	tagEntity := &entities.Tag{
+		TagID: tagUUID,
+		Topic: topic,
+	}
+
+	return s.ShopRepository.EditTag(tagEntity)
 }
