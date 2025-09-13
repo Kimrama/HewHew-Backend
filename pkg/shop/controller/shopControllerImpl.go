@@ -3,85 +3,84 @@ package controller
 import (
 	"errors"
 	"fmt"
-    "net/url"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/pkg/shop/service"
 	"hewhew-backend/utils"
+	"net/url"
+
 	"github.com/gofiber/fiber/v2"
-    "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-
 type ShopControllerImpl struct {
-    ShopService service.ShopService
+	ShopService service.ShopService
 }
 
 func NewShopControllerImpl(ShopService service.ShopService) ShopController {
-    return &ShopControllerImpl{
-        ShopService: ShopService,
-    }
+	return &ShopControllerImpl{
+		ShopService: ShopService,
+	}
 }
 
 func (s *ShopControllerImpl) CreateCanteen(ctx *fiber.Ctx) error {
-    var body model.CanteenRequest
-    if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid request",
-        })
-    }
+	var body model.CanteenRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
 
 	c := &entities.Canteen{
 		CanteenName: body.CanteenName,
-		Latitude:  body.Latitude,
-		Longitude:  body.Longitude,
+		Latitude:    body.Latitude,
+		Longitude:   body.Longitude,
 	}
-    if err := s.ShopService.CreateCanteen(c); err != nil {
-        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
-    return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-        "message": "Canteen created successfully",
-    })
+	if err := s.ShopService.CreateCanteen(c); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Canteen created successfully",
+	})
 }
 
 func (s *ShopControllerImpl) EditCanteen(ctx *fiber.Ctx) error {
-    canteenName := ctx.Params("canteenName")
-    decodedName, err := url.PathUnescape(canteenName)
-    if err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid canteen name",
-        })
-    }
+	canteenName := ctx.Params("canteenName")
+	decodedName, err := url.PathUnescape(canteenName)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid canteen name",
+		})
+	}
 
-    var body model.CanteenRequest
-    if err := ctx.BodyParser(&body); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid request",
-        })
-    }
+	var body model.CanteenRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
 
-    c := &entities.Canteen{
-        CanteenName: decodedName,
-        Latitude:    body.Latitude,
-        Longitude:   body.Longitude,
-    }
+	c := &entities.Canteen{
+		CanteenName: decodedName,
+		Latitude:    body.Latitude,
+		Longitude:   body.Longitude,
+	}
 
-    if err := s.ShopService.EditCanteen(decodedName, c); err != nil {
-        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
+	if err := s.ShopService.EditCanteen(decodedName, c); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-    return ctx.JSON(fiber.Map{"message": "Canteen updated successfully"})
+	return ctx.JSON(fiber.Map{"message": "Canteen updated successfully"})
 }
 
-
 func (s *ShopControllerImpl) DeleteCanteen(ctx *fiber.Ctx) error {
-    return nil
+	return nil
 }
 
 func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
@@ -91,8 +90,8 @@ func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 			"error": "invalid request",
 		})
 	}
-	
-	claims, err := getClaimsFromToken(ctx)	
+
+	claims, err := getClaimsFromToken(ctx)
 	if err != nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": err.Error(),
@@ -113,6 +112,7 @@ func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 		})
 	}
 
+
 	if err := s.ShopService.ChangeState(body,admin.ShopID); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -121,6 +121,7 @@ func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{"message": "Shop state updated successfully"})
 }
+
 
 
 func (s *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
@@ -144,6 +145,7 @@ func (s *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 			"error": "invalid request",
 		})
 	}
+
     admin, err := s.ShopService.GetShopAdminByUsername(claims["username"].(string))
 
 	if err != nil || admin == nil {
@@ -160,7 +162,6 @@ func (s *ShopControllerImpl) EditShop(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{"message": "Shop updated successfully"})
 }
-
 
 func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
     claims, err := getClaimsFromToken(ctx)
@@ -193,12 +194,10 @@ func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
     return ctx.JSON(fiber.Map{
         "name":         shop.Name,
         "canteen_name": shop.CanteenName,
-		"shopimg":      shop.ImageURL,
+		    "shopimg":      shop.ImageURL,
     })
 }
 
-func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
-	
 	image, err := ctx.FormFile("Image")
 	if err != nil || image == nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -219,7 +218,6 @@ func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 			"error": "invalid token",
 		})
 	}
-
 
 	fmt.Println("userID from token:", tokenUserID)
 	shop, err := s.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
@@ -252,7 +250,6 @@ func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Shop image updated successfully"})
 }
@@ -265,6 +262,7 @@ func getClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
 	}
 	return claims, nil
 }
+
 
 func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 	claims, err := getClaimsFromToken(ctx)
@@ -296,11 +294,18 @@ func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 	}
 
 	err = s.ShopService.CreateTag(shop.ShopID.String(), &body)
+
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
+
 	return ctx.JSON(fiber.Map{"message": "Tag created successfully"})
 	
+func (c *ShopControllerImpl) GetAllCanteens(ctx *fiber.Ctx) error {
+	canteens, err := c.ShopService.GetAllCanteens()
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"canteens": canteens,
+	})
 }

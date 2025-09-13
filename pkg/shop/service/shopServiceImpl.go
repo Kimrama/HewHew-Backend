@@ -12,31 +12,30 @@ import (
 )
 
 type ShopServiceImpl struct {
-    ShopRepository repository.ShopRepository
+	ShopRepository repository.ShopRepository
 }
 
 func NewShopServiceImpl(ShopRepository repository.ShopRepository) ShopService {
-    return &ShopServiceImpl{
-        ShopRepository: ShopRepository,
-    }
+	return &ShopServiceImpl{
+		ShopRepository: ShopRepository,
+	}
 }
 func (s *ShopServiceImpl) CreateCanteen(canteenModel interface{}) error {
-    return s.ShopRepository.CreateCanteen(canteenModel)
-}   
+	return s.ShopRepository.CreateCanteen(canteenModel)
+}
 
-func (s *ShopServiceImpl) EditCanteen(canteenName string,canteenEntity *entities.Canteen) error {
-    if canteenName == "" {
-        return fmt.Errorf("canteen name is required")
-    }
-    return s.ShopRepository.EditCanteen(canteenName,canteenEntity)
+func (s *ShopServiceImpl) EditCanteen(canteenName string, canteenEntity *entities.Canteen) error {
+	if canteenName == "" {
+		return fmt.Errorf("canteen name is required")
+	}
+	return s.ShopRepository.EditCanteen(canteenName, canteenEntity)
 }
 
 func (s *ShopServiceImpl) DeleteCanteen(canteenID string) error {
-    return nil
+	return nil
 }
 
 func (s *ShopServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
-	
     return s.ShopRepository.GetShopByAdminID(adminID)
 }
 
@@ -52,15 +51,15 @@ func (s *ShopServiceImpl) ChangeState(body model.ChangeState, shopID uuid.UUID) 
 		return fmt.Errorf("invalid state value: %s", body.State)
 	}
 
-	return s.ShopRepository.ChangeState(state,shopID)
+	return s.ShopRepository.ChangeState(state, shopID)
 }
 
 func (s *ShopServiceImpl) EditShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) error {
-    err := s.ShopRepository.EditShopImage(shopID, imageModel)
-    if err != nil {
-        return err
-    }
-    return nil
+	err := s.ShopRepository.EditShopImage(shopID, imageModel)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) error {
@@ -68,13 +67,12 @@ func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) e
 		return errors.New("no fields to update")
 	}
 
-
 	shopEntity := &entities.Shop{
 		Name:        body.ShopName,
 		CanteenName: body.ShopCanteenName,
 		Address:     "Default Address",
 	}
-    fmt.Println("Service - EditShop: ", shopEntity, shop)
+	fmt.Println("Service - EditShop: ", shopEntity, shop)
 
 	return s.ShopRepository.EditShop(*shopEntity, shop)
 }
@@ -100,4 +98,7 @@ func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest)
 
 func (s *ShopServiceImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
 	return s.ShopRepository.GetShopAdminByUsername(username)
+}
+func (s *ShopServiceImpl) GetAllCanteens() ([]entities.Canteen, error) {
+	return s.ShopRepository.GetAllCanteens()
 }
