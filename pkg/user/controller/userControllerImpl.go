@@ -207,6 +207,7 @@ func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
     return ctx.JSON(fiber.Map{
         "name":         shop.Name,
         "canteen_name": shop.CanteenName,
+		"shopimg":      shop.ImageURL,
     })
 }
 
