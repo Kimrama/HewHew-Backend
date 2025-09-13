@@ -12,8 +12,4 @@ return &MenuRepositoryImpl{
 }
 }
 
-func (r *MenuRepositoryImpl) CreateMenu(menuModel interface{}) error {
-    // Implement the logic to save the menu item to the database
-    // This is a placeholder implementation
-    return nil
-}
+
