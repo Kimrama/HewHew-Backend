@@ -36,7 +36,7 @@ func (s *ShopServiceImpl) DeleteCanteen(canteenID string) error {
 }
 
 func (s *ShopServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
-	return s.ShopRepository.GetShopByAdminID(adminID)
+    return s.ShopRepository.GetShopByAdminID(adminID)
 }
 
 func (s *ShopServiceImpl) ChangeState(body model.ChangeState, shopID uuid.UUID) error {
@@ -75,6 +75,25 @@ func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) e
 	fmt.Println("Service - EditShop: ", shopEntity, shop)
 
 	return s.ShopRepository.EditShop(*shopEntity, shop)
+}
+
+func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest) error {
+	if body.Topic == "" {
+		return errors.New("tag topic is required")
+	}
+
+	shopUUID, err := uuid.Parse(ShopID)
+	if err != nil {
+		return fmt.Errorf("invalid ShopID: %v", err)
+	}
+
+	tagEntity := &entities.Tag{
+		Topic:  body.Topic,
+		ShopID: shopUUID,
+		TagID:  uuid.New(),
+	}
+	
+	return s.ShopRepository.CreateTag(tagEntity)
 }
 
 func (s *ShopServiceImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {

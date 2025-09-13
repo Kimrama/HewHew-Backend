@@ -162,6 +162,10 @@ func (r *ShopRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 	return &admin, nil
 }
 
+func (r *ShopRepositoryImpl) CreateTag(tagModel *entities.Tag) error {
+	return r.db.Connect().Create(tagModel).Error
+
+
 func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	var canteens []entities.Canteen
 	db := r.db.Connect()

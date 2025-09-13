@@ -17,5 +17,6 @@ type ShopService interface {
 	ChangeState(body model.ChangeState, admin_id uuid.UUID) error
 	EditShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
+	CreateTag(ShopID string, tagModel *model.TagCreateRequest) error
 	GetAllCanteens() ([]entities.Canteen, error)
 }
