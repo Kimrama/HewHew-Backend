@@ -17,8 +17,6 @@ type UserService interface {
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
     GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
-	EditShop(shopID uuid.UUID, shopEntity *entities.Shop) error
-	ChangeState(shopID uuid.UUID, state bool) error
-	EditShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) error
+
 }
 

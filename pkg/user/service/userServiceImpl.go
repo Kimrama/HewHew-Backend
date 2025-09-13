@@ -21,14 +21,6 @@ func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	}
 }
 
-func (s *UserServiceImpl) EditShop(shopID uuid.UUID, shopEntity *entities.Shop) error {
-	if shopEntity.Name == "" && shopEntity.Address == "" && shopEntity.CanteenName == "" {
-		return errors.New("no fields to update")
-	}
-	shopEntity.ShopID = shopID
-	return s.userRepository.EditShop(shopID, shopEntity)
-}
-
 func (s *UserServiceImpl) EditUser(userID uuid.UUID, userEntity *entities.User) error {
 	if userEntity.FName == "" && userEntity.LName == "" && userEntity.Gender == "" {
 		return errors.New("no fields to update")
@@ -100,13 +92,6 @@ func (s *UserServiceImpl) EditUserProfileImage(userID uuid.UUID, imageModel *uti
 	return nil
 }
 
-func (s *UserServiceImpl) EditShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) error {
-    err := s.userRepository.EditShopImage(shopID, imageModel)
-    if err != nil {
-        return err
-    }
-    return nil
-}
 
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
 	return s.userRepository.GetUserByUsername(username)
@@ -123,8 +108,6 @@ func (s *UserServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, e
     return s.userRepository.GetShopByAdminID(adminID)
 }
 
-func (s *UserServiceImpl) ChangeState(shopID uuid.UUID, state bool) error {
-	return s.userRepository.ChangeState(shopID, state)
-}
+
 
 
