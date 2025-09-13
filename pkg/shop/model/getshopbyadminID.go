@@ -1,6 +1,7 @@
 package model
 
 type ShopByAdminID struct {
-    Shop_Name        string  `json:"shop_name"`
-    Shop_CanteenName string  `json:"shop_canteen_name"`
+    ShopName        string  `json:"shopname"`
+    ShopCanteenName string  `json:"shopcanteenname"`
+    ShopImg         string  `json:"shopimg"`
 }

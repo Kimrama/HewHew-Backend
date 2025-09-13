@@ -17,4 +17,5 @@ type ShopRepository interface {
 	UploadShopImage(shopID uuid.UUID, imageModel *utils.ImageModel) (string, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
+	CreateTag(tagModel *entities.Tag) error
 }
