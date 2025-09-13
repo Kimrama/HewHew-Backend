@@ -20,4 +20,6 @@ type ShopRepository interface {
 	CreateTag(tagModel *entities.Tag) error
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagModel *entities.Tag) error
+	GetAllTags(shopID string) ([]entities.Tag, error)
+	DeleteTag(tagID string) error
 }
