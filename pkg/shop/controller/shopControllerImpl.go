@@ -311,3 +311,75 @@ func (c *ShopControllerImpl) GetAllCanteens(ctx *fiber.Ctx) error {
 		"canteens": canteens,
 	})
 }
+
+func (s *ShopControllerImpl) GetTagsByShopIDAndTopic(ctx *fiber.Ctx) error {
+	claims , err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+
+	shop, err := s.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var body model.GettagbyShopIDandTopic
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	tag, err := s.ShopService.GetTagsByShopIDAndTopic(shop.ShopID.String(), body.Topic)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{"tag": tag})
+}
+
+func (s *ShopControllerImpl) Edittag(ctx *fiber.Ctx) error {
+	claims , err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+
+	var body model.TagEditRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	edit := s.ShopService.EditTag(body.TagID, body.Topic)
+
+	if edit != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": edit.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{"message": "Tag Edit successfully"})
+}
