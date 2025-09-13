@@ -174,3 +174,38 @@ func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	}
 	return canteens, nil
 }
+
+func (r *ShopRepositoryImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {
+	var tags []entities.Tag
+	db := r.db.Connect()
+	if err := db.
+		Where("shop_id = ? AND topic = ?", shopID, topic).
+		Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
+func (r *ShopRepositoryImpl) EditTag(tagModel *entities.Tag) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Tag{}).
+		Where("tag_id = ?", tagModel.TagID).
+		Updates(map[string]interface{}{
+			"topic": tagModel.Topic,
+		}).Error
+	return err
+}
+
+func (r *ShopRepositoryImpl) GetAllTags(shopID string) ([]entities.Tag, error) {
+	var tags []entities.Tag
+	db := r.db.Connect()
+	if err := db.Where("shop_id = ?", shopID).Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+func (r *ShopRepositoryImpl) DeleteTag(tagID string) error {
+	db := r.db.Connect()
+	err := db.Where("tag_id = ?", tagID).Delete(&entities.Tag{}).Error
+	return err
+}

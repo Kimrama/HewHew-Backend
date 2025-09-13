@@ -1,5 +1,5 @@
 package model
 
-type TagCreateRequest struct {
+type TagEditRequest struct {
 	Topic string `json:"topic"`
 }
