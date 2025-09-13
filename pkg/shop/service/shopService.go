@@ -21,4 +21,6 @@ type ShopService interface {
 	GetAllCanteens() ([]entities.Canteen, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagID string, topic string) error
+	GetAllTags(shopID string) ([]entities.Tag, error)
+	DeleteTag(tagID string) error
 }
