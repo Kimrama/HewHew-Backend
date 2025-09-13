@@ -11,5 +11,4 @@ type ShopController interface {
 	ChangeState(ctx *fiber.Ctx) error
 	EditShopImage(ctx *fiber.Ctx) error
 	Createtag(ctx *fiber.Ctx) error
-
 }
