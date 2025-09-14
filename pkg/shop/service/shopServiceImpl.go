@@ -31,8 +31,11 @@ func (s *ShopServiceImpl) EditCanteen(canteenName string, canteenEntity *entitie
 	return s.ShopRepository.EditCanteen(canteenName, canteenEntity)
 }
 
-func (s *ShopServiceImpl) DeleteCanteen(canteenID string) error {
-	return nil
+func (s *ShopServiceImpl) DeleteCanteen(canteenName string) error {
+    if canteenName == "" {
+        return fmt.Errorf("canteen name is required")
+    }  
+    return s.ShopRepository.DeleteCanteen(canteenName)
 }
 
 func (s *ShopServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
@@ -70,7 +73,7 @@ func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) e
 	shopEntity := &entities.Shop{
 		Name:        body.ShopName,
 		CanteenName: body.ShopCanteenName,
-		Address:     "Default Address",
+		Address:     "Null",
 	}
 	fmt.Println("Service - EditShop: ", shopEntity, shop)
 

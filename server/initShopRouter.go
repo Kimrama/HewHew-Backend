@@ -16,7 +16,7 @@ func (s *fiberServer) initShopRouter() {
 	canteenGroup.Get("/", shopController.GetAllCanteens)
 	canteenGroup.Post("/", shopController.CreateCanteen)
 	canteenGroup.Put("/:canteenName", shopController.EditCanteen)
-	// canteenGroup.Delete("/:canteenName", shopController.DeleteCanteen)
+	canteenGroup.Delete("/:canteenName", shopController.DeleteCanteen)
 
 	shopGroup := s.app.Group("/v1/shop")
 	shopGroup.Use(utils.JWTProtected())

@@ -10,8 +10,8 @@ import (
 
 type ShopService interface {
 	CreateCanteen(canteenModel interface{}) error
-	EditCanteen(canteenName string, canteenEntity *entities.Canteen) error
-	DeleteCanteen(canteenID string) error
+	EditCanteen(canteenName string,canteenEntity *entities.Canteen) error
+	DeleteCanteen(canteenName string) error
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	EditShop(body model.EditShopRequest, shop uuid.UUID) error
 	ChangeState(body model.ChangeState, admin_id uuid.UUID) error
