@@ -17,6 +17,6 @@ type UserService interface {
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
     GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
-
+	Topup(UserID string, amount float64) error
 }
 
