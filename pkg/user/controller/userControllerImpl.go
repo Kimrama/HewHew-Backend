@@ -125,7 +125,7 @@ func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {
 			"error": "Invalid username or password",
 		})
 	}
-	token, err := utils.GenerateJWT(user.UserID, user.Username, "User")
+	token, err := utils.GenerateUserJWT(user.UserID, user.Username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate token",
@@ -310,7 +310,7 @@ func (c *UserControllerImpl) LoginShopAdmin(ctx *fiber.Ctx) error {
 		})
 	}
 
-	token, err := utils.GenerateJWT(admin.AdminID, admin.Username, "Admin")
+	token, err := utils.GenerateAdminJWT(admin.AdminID, admin.ShopID, admin.Username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate token",
@@ -319,7 +319,6 @@ func (c *UserControllerImpl) LoginShopAdmin(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{
 		"token": token,
-		"role":  "Admin",
 	})
 }
 

@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -11,12 +13,23 @@ import (
 
 var jwtSecret []byte = []byte(os.Getenv("JWTSecret"))
 
-func GenerateJWT(userID uuid.UUID, username string, role string) (string, error) {
+func GenerateUserJWT(userID uuid.UUID, username string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":  userID,
 		"username": username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-		"role":     role,
+		"exp":      time.Now().Add(time.Hour * 24 * 30).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+func GenerateAdminJWT(userID uuid.UUID, shopID uuid.UUID, username string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id":  userID,
+		"username": username,
+		"exp":      time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"admin":    true,
+		"shop":     shopID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -52,3 +65,11 @@ func JWTProtected() fiber.Handler {
 	}
 }
 
+func GetClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
+	token := ctx.Locals("jwt").(*jwt.Token)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract claims from token")
+	}
+	return claims, nil
+}
