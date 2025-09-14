@@ -15,6 +15,7 @@ func main() {
 	fmt.Println("config:\n", string(confString))
 
 	database := database.NewPostgresDatabase(conf.Database)
+	
 	//migration.Migrate(database)
 	server := server.NewFiberServer(conf, database)
 

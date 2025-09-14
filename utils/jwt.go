@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -52,3 +54,11 @@ func JWTProtected() fiber.Handler {
 	}
 }
 
+func GetClaimsFromToken(ctx *fiber.Ctx) (jwt.MapClaims, error) {
+	token := ctx.Locals("jwt").(*jwt.Token)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("failed to extract claims from token")
+	}
+	return claims, nil
+}
