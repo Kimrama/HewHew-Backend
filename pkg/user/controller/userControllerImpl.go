@@ -322,3 +322,42 @@ func (c *UserControllerImpl) LoginShopAdmin(ctx *fiber.Ctx) error {
 		"role":  "Admin",
 	})
 }
+
+func (c *UserControllerImpl) Topup(ctx *fiber.Ctx) error {
+
+	var body model.TopupRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	if body.Amount <= 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "amount must be greater than zero",
+		})
+	}
+
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+
+	err = c.userService.Topup(tokenUserID, body.Amount)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{"message": "Topup successfully"})
+}
