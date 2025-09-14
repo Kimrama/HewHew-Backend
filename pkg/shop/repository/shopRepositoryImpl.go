@@ -212,3 +212,5 @@ func (r *ShopRepositoryImpl) DeleteTag(tagID string) error {
 	err := db.Where("tag_id = ?", tagID).Delete(&entities.Tag{}).Error
 	return err
 }
+
+

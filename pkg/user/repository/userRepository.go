@@ -18,6 +18,7 @@ type UserRepository interface {
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
+	Topup(topupModel *entities.TopUp) error
 }
 
 

@@ -6,7 +6,8 @@ import (
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
 	"hewhew-backend/utils"
-
+	"fmt"
+	"time"
 	"github.com/google/uuid"
 )
 
@@ -59,9 +60,9 @@ func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error
 	
 	ShopEntity := &entities.Shop{
 		ShopID:      uuid.New(),
-        Name:        "Default Shop Name",
-        Address:     "Default Address",
-        CanteenName: "Default Canteen",
+        Name:        "Null",
+        Address:     "Null",
+        CanteenName: "Null",
 	}
 
 	if err := s.userRepository.CreateShop(ShopEntity); err != nil {
@@ -108,6 +109,20 @@ func (s *UserServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, e
     return s.userRepository.GetShopByAdminID(adminID)
 }
 
+func (s *UserServiceImpl) Topup(UserID string, amount float64) error {
+	parsedUUID, err := uuid.Parse(UserID)
+	if err != nil {
+		return fmt.Errorf("invalid UserID: %v", err)
+	}
+	TopupEntity := &entities.TopUp{
+		UserID:   parsedUUID,
+		Amount:   amount,
+		TimeStamp: time.Now(),
+		TopUpID:  uuid.New(),
+	}
+
+	return s.userRepository.Topup(TopupEntity)
+}
 
 
 
