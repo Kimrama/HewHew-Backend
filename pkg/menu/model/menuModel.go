@@ -11,10 +11,10 @@ const (
 	MenuStatusUnavailable MenuStatus = "unavailable"
 )
 
-type CreateMenuRequest struct {
+type MenuRequest struct {
 	Name   string           `json:"name"`
 	Detail string           `json:"detail"`
-	Price  float64           `json:"price"`
+	Price  string           `json:"price"`
 	Status MenuStatus       `json:"status"`
 	Tag1ID string            `json:"tag1_id"`
 	Tag2ID string            `json:"tag2_id"`
