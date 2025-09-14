@@ -59,9 +59,9 @@ func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error
 	
 	ShopEntity := &entities.Shop{
 		ShopID:      uuid.New(),
-        Name:        "Default Shop Name",
-        Address:     "Default Address",
-        CanteenName: "Default Canteen",
+        Name:        "Null",
+        Address:     "Null",
+        CanteenName: "Null",
 	}
 
 	if err := s.userRepository.CreateShop(ShopEntity); err != nil {
