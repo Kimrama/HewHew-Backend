@@ -169,4 +169,25 @@ func (r *UserRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 	return &admin, nil
 }
 
+func (r *UserRepositoryImpl) Topup(topupModel *entities.TopUp) error {
+	if err := r.db.Connect().Create(topupModel).Error; err != nil {
+		return err
+	}
+
+	var user entities.User
+	db := r.db.Connect()
+	if err := db.First(&user, "user_id = ?", topupModel.UserID).Error; err != nil {
+		return err
+	}
+
+	newBalance := user.Wallet + topupModel.Amount
+	if err := db.Model(&entities.User{}).
+		Where("user_id = ?", topupModel.UserID).
+		Update("wallet", newBalance).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
