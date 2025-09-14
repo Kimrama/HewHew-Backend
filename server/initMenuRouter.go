@@ -28,6 +28,6 @@ func (s *fiberServer) initMenuRouter() {
 	menuGroup.Post("/", menuController.CreateMenu)
 	menuGroup.Put("/:menu_id", menuController.EditMenu)
 	menuGroup.Delete("/:menu_id", menuController.DeleteMenu)
-	menuGroup.Get("/:shop_id", menuController.GetMenusByShopID)
+	menuGroup.Get("/", menuController.GetAllMenu)
 
 }

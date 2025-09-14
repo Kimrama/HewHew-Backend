@@ -80,19 +80,19 @@ func (s *ShopControllerImpl) EditCanteen(ctx *fiber.Ctx) error {
 }
 
 func (s *ShopControllerImpl) DeleteCanteen(ctx *fiber.Ctx) error {
-    canteenName := ctx.Params("canteenName")
-    decodedName, err := url.PathUnescape(canteenName)
-    if err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid canteen name",
-        })
-    }
-    if err := s.ShopService.DeleteCanteen(decodedName); err != nil {
-        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-            "error": err.Error(),
-        })
-    }
-    return ctx.JSON(fiber.Map{"message": "Canteen deleted successfully"})
+	canteenName := ctx.Params("canteenName")
+	decodedName, err := url.PathUnescape(canteenName)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid canteen name",
+		})
+	}
+	if err := s.ShopService.DeleteCanteen(decodedName); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.JSON(fiber.Map{"message": "Canteen deleted successfully"})
 }
 
 func (s *ShopControllerImpl) ChangeState(ctx *fiber.Ctx) error {
@@ -410,9 +410,8 @@ func (s *ShopControllerImpl) GetAllTags(ctx *fiber.Ctx) error {
 			"error": "invalid token",
 		})
 	}
-	role, ok := claims["role"].(string)
-	if !ok || role != "Admin" {
-		fmt.Println("Role from token:", role)
+	isAdmin, ok := claims["admin"].(bool)
+	if !ok || !isAdmin {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "unauthorized",
 		})
@@ -440,9 +439,9 @@ func (s *ShopControllerImpl) DeleteTag(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	role, ok := claim["role"].(string)
-	if !ok || role != "Admin" {
-		fmt.Println("Role from token:", role)
+
+	admin := claim["admin"].(bool)
+	if !admin {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "unauthorized",
 		})
