@@ -7,6 +7,7 @@ import (
 	"hewhew-backend/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type MenuControllerImpl struct {
@@ -75,7 +76,7 @@ func (c *MenuControllerImpl) CreateMenu(ctx *fiber.Ctx) error {
     }
 
 
-	menuModel := &model.CreateMenuRequest{
+	menuModel := &model.MenuRequest{
 		Name:   Name,
 		Detail: Detail,
 		Price:  Price,
@@ -96,11 +97,96 @@ func (c *MenuControllerImpl) CreateMenu(ctx *fiber.Ctx) error {
 	})
 }
 
-func (c *MenuControllerImpl) GetMenu(ctx *fiber.Ctx) error {
-    return nil
+func (c *MenuControllerImpl) GetMenusByShopID(ctx *fiber.Ctx) error {
+    shopIDParam := ctx.Params("shop_id")
+    if shopIDParam == "" {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ShopID is required"})
+    }
+
+    shopID, err := uuid.Parse(shopIDParam)
+    if err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid ShopID"})
+    }
+    
+    menus, err := c.MenuService.GetMenusByShopID(shopID)
+    if err != nil {
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "erasdror": err.Error(),
+        })
+    }
+
+    return ctx.Status(fiber.StatusOK).JSON(menus)
+}
+
+
+func (c *MenuControllerImpl) DeleteMenu(ctx *fiber.Ctx) error {
+    claims, err := utils.GetClaimsFromToken(ctx)
+    if err != nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    username, ok := claims["username"].(string)
+    if !ok || username == "" {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+    }
+
+    menuIDParam := ctx.Params("menu_id")
+    if menuIDParam == "" {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "menuID is required"})
+    }
+
+    menuID, err := uuid.Parse(menuIDParam)
+    if err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid menuID"})
+    }
+
+    admin, err := c.ShopService.GetShopAdminByUsername(username)
+    if err != nil || admin == nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin not found"})
+    }
+
+    if err := c.MenuService.DeleteMenu(menuID, admin); err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Menu deleted successfully"})
 }
 
 func (c *MenuControllerImpl) EditMenu(ctx *fiber.Ctx) error {
-    return nil
+    claims, err := utils.GetClaimsFromToken(ctx)
+    if err != nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    username, ok := claims["username"].(string)
+    if !ok || username == "" {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+    }
+
+    menuIDParam := ctx.Params("menu_id")
+    if menuIDParam == "" {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "menuID is required"})
+    }
+
+    menuID, err := uuid.Parse(menuIDParam)
+    if err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid menuID"})
+    }
+
+    admin, err := c.ShopService.GetShopAdminByUsername(username)
+    if err != nil || admin == nil {
+        return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin not found"})
+    }
+
+    var req model.MenuRequest
+    if err := ctx.BodyParser(&req); err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+    }
+
+    if err := c.MenuService.EditMenu(menuID, admin, &req); err != nil {
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return ctx.JSON(fiber.Map{"message": "Menu updated successfully"})
 }
 

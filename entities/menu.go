@@ -15,3 +15,4 @@ type Menu struct {
 	Tag1ID     *uuid.UUID   `gorm:"index"`
 	Tag2ID     *uuid.UUID   `gorm:"index"`
 }
+

@@ -11,7 +11,7 @@ const (
 	MenuStatusUnavailable MenuStatus = "unavailable"
 )
 
-type CreateMenuRequest struct {
+type MenuRequest struct {
 	Name   string           `json:"name"`
 	Detail string           `json:"detail"`
 	Price  string           `json:"price"`

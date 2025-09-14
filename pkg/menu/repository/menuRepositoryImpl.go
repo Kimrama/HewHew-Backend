@@ -61,3 +61,44 @@ func (r *MenuRepositoryImpl) UploadMenuImage(menuID uuid.UUID, imageModel *utils
 	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/userProfile/%s", r.supabaseConfig.URL, customName)
 	return publicURL, nil
 }   
+
+func (r *MenuRepositoryImpl) GetMenusByShopID(shopID uuid.UUID) ([]*entities.Menu, error) {
+    var menus []*entities.Menu
+    db := r.db.Connect()
+    if err := db.Where("shop_id = ?", shopID).Find(&menus).Error; err != nil {
+        return nil, err
+    }
+    return menus, nil
+}
+
+func (r *MenuRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
+    var menu entities.Menu
+    db := r.db.Connect()
+    if err := db.Where("menu_id = ?", menuID).First(&menu).Error; err != nil {
+        return nil, err
+    }
+    return &menu, nil
+}
+
+func (r *MenuRepositoryImpl) DeleteMenu(menuID uuid.UUID) error {
+    db := r.db.Connect()
+    if err := db.Where("menu_id = ?", menuID).Delete(&entities.Menu{}).Error; err != nil {
+        return err
+    }
+    return nil
+}
+
+func (r *MenuRepositoryImpl) EditMenu(menu *entities.Menu) error {
+    db := r.db.Connect()
+	err := db.Model(&entities.Menu{}).
+		Where("menu_id = ?", menu.MenuID).
+		Updates(map[string]interface{}{
+			"name": menu.Name,
+			"detail": menu.Detail,
+			"price": menu.Price,
+			"status": menu.Status,
+			"tag1_id": menu.Tag1ID,
+			"tag2_id": menu.Tag2ID,
+		}).Error
+	return err
+}

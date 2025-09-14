@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/menu/model"
@@ -20,7 +21,7 @@ func NewMenuServiceImpl(MenuRepository repository.MenuRepository) MenuService {
     }
 }
 
-func (s *MenuServiceImpl) CreateMenu(menuModel *model.CreateMenuRequest, shopID uuid.UUID) error {
+func (s *MenuServiceImpl) CreateMenu(menuModel *model.MenuRequest, shopID uuid.UUID) error {
     menuID := uuid.New()
     imageUrl := ""
     if menuModel.Image != nil {
@@ -69,5 +70,67 @@ func (s *MenuServiceImpl) CreateMenu(menuModel *model.CreateMenuRequest, shopID 
     }
 
     return nil
+}
+
+func (s *MenuServiceImpl) GetMenusByShopID(shopID uuid.UUID) ([]*entities.Menu, error) {
+    return s.MenuRepository.GetMenusByShopID(shopID)
+}
+
+
+func (s *MenuServiceImpl) DeleteMenu(menuID uuid.UUID, admin *entities.ShopAdmin) error {
+    menu, err := s.MenuRepository.GetMenuByID(menuID)
+    if err != nil {
+        return fmt.Errorf("menu not found")
+    }
+
+    if menu.ShopID != admin.ShopID {
+        return fmt.Errorf("unauthorized to delete this menu")
+    }
+
+    return s.MenuRepository.DeleteMenu(menuID)
+}
+
+
+func (s *MenuServiceImpl) EditMenu(menuID uuid.UUID, admin *entities.ShopAdmin, req *model.MenuRequest) error {
+    price, err := strconv.ParseFloat(req.Price, 64)
+    if err != nil {
+        return errors.New("invalid price")
+    }
+
+    menu, err := s.MenuRepository.GetMenuByID(menuID)
+    if err != nil {
+        return err
+    }
+    if menu.ShopID != admin.ShopID {
+        return errors.New("unauthorized to edit this menu")
+    }
+
+    var tag1UUID, tag2UUID *uuid.UUID
+    if req.Tag1ID != "" {
+        id, err := uuid.Parse(req.Tag1ID)
+        if err != nil {
+            return err
+        }
+        tag1UUID = &id
+    }
+    if req.Tag2ID != "" {
+        id, err := uuid.Parse(req.Tag2ID)
+        if err != nil {
+            return err
+        }
+        tag2UUID = &id
+    }
+
+    menu = &entities.Menu{
+        MenuID:   menuID,
+        Name:     req.Name,
+        Detail:   req.Detail,
+        Price:    price,
+        Status:   string(req.Status),
+        Tag1ID:   tag1UUID,
+        Tag2ID:   tag2UUID,
+    }
+
+    return s.MenuRepository.EditMenu(menu)
 }
 
