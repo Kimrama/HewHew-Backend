@@ -10,4 +10,5 @@ type UserController interface {
 	EditUserProfileImage(ctx *fiber.Ctx) error
 	LoginShopAdmin(ctx *fiber.Ctx) error
 	CreateAdmin(ctx *fiber.Ctx) error
+	Topup(ctx *fiber.Ctx) error
 }
