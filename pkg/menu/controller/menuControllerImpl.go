@@ -111,7 +111,7 @@ func (c *MenuControllerImpl) GetMenusByShopID(ctx *fiber.Ctx) error {
     menus, err := c.MenuService.GetMenusByShopID(shopID)
     if err != nil {
         return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-            "erasdror": err.Error(),
+            "error": err.Error(),
         })
     }
 
