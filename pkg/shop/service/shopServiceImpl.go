@@ -32,10 +32,10 @@ func (s *ShopServiceImpl) EditCanteen(canteenName string, canteenEntity *entitie
 }
 
 func (s *ShopServiceImpl) DeleteCanteen(canteenName string) error {
-    if canteenName == "" {
-        return fmt.Errorf("canteen name is required")
-    }  
-    return s.ShopRepository.DeleteCanteen(canteenName)
+	if canteenName == "" {
+		return fmt.Errorf("canteen name is required")
+	}
+	return s.ShopRepository.DeleteCanteen(canteenName)
 }
 
 func (s *ShopServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
@@ -80,14 +80,14 @@ func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) e
 	return s.ShopRepository.EditShop(*shopEntity, shop)
 }
 
-func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest) error {
+func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest) (*entities.Tag, error) {
 	if body.Topic == "" {
-		return errors.New("tag topic is required")
+		return nil, errors.New("tag topic is required")
 	}
 
 	shopUUID, err := uuid.Parse(ShopID)
 	if err != nil {
-		return fmt.Errorf("invalid ShopID: %v", err)
+		return nil, fmt.Errorf("invalid ShopID: %v", err)
 	}
 
 	tagEntity := &entities.Tag{
@@ -135,4 +135,3 @@ func (s *ShopServiceImpl) DeleteTag(tagID string) error {
 	}
 	return nil
 }
-

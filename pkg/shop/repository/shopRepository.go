@@ -18,7 +18,7 @@ type ShopRepository interface {
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
 	GetAllCanteens() ([]entities.Canteen, error)
-	CreateTag(tagModel *entities.Tag) error
+	CreateTag(tagModel *entities.Tag) (*entities.Tag, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagModel *entities.Tag) error
 	GetAllTags(shopID string) ([]entities.Tag, error)
