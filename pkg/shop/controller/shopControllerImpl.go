@@ -302,7 +302,7 @@ func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = s.ShopService.CreateTag(shop.ShopID.String(), &body)
+	tag, err := s.ShopService.CreateTag(shop.ShopID.String(), &body)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -310,8 +310,9 @@ func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.JSON(fiber.Map{"message": "Tag created successfully"})
+	return ctx.JSON(fiber.Map{"tag": tag})
 }
+
 func (c *ShopControllerImpl) GetAllCanteens(ctx *fiber.Ctx) error {
 	canteens, err := c.ShopService.GetAllCanteens()
 	if err != nil {
