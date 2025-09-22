@@ -209,6 +209,7 @@ func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"name":         shop.Name,
 		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
+		"state":       shop.State,
 	})
 }
 
