@@ -204,6 +204,7 @@ func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"name":         shop.Name,
 		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
+		"state":       shop.State,
 	})
 }
 func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
