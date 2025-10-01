@@ -361,3 +361,15 @@ func (c *UserControllerImpl) Topup(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{"message": "Topup successfully"})
 }
+
+func (c *UserControllerImpl) GetAllShops(ctx *fiber.Ctx) error {
+	shops, err := c.userService.GetAllShops()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.JSON(fiber.Map{
+		"shops": shops,
+	})
+}

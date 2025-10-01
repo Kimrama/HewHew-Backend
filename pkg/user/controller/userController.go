@@ -11,4 +11,5 @@ type UserController interface {
 	LoginShopAdmin(ctx *fiber.Ctx) error
 	CreateAdmin(ctx *fiber.Ctx) error
 	Topup(ctx *fiber.Ctx) error
+	GetAllShops(ctx *fiber.Ctx) error
 }
