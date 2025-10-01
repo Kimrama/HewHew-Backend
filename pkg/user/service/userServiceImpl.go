@@ -109,6 +109,10 @@ func (s *UserServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, e
     return s.userRepository.GetShopByAdminID(adminID)
 }
 
+func (s *UserServiceImpl) GetAllShops() ([]entities.Shop, error) {
+	return s.userRepository.GetAllShops()
+}
+
 func (s *UserServiceImpl) Topup(UserID string, amount float64) error {
 	parsedUUID, err := uuid.Parse(UserID)
 	if err != nil {
