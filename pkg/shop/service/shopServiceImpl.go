@@ -135,3 +135,7 @@ func (s *ShopServiceImpl) DeleteTag(tagID string) error {
 	}
 	return nil
 }
+
+func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
+	return s.ShopRepository.GetAllMenus(shopID)
+}

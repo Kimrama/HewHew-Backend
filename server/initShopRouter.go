@@ -24,6 +24,7 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Get("/", shopController.GetShop)
 	shopGroup.Patch("/toggle_open_state", shopController.ChangeState)
 	shopGroup.Put("/shopimage", shopController.EditShopImage)
+	shopGroup.Get("/menus", shopController.GetAllMenus)
 	
 	shopGroup.Post("/tags", shopController.Createtag)
 	shopGroup.Put("/tags/:tagID", shopController.Edittag)
