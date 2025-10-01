@@ -159,6 +159,14 @@ func (r *UserRepositoryImpl) EditUser(userID uuid.UUID, user *entities.User) err
 	return err
 }
 
+func (r *UserRepositoryImpl) GetAllShops() ([]entities.Shop, error) {
+	var shops []entities.Shop
+	db := r.db.Connect()
+	if err := db.Find(&shops).Error; err != nil {
+		return nil, err
+	}
+	return shops, nil
+}
 
 func (r *UserRepositoryImpl) GetShopAdminByUsername(username string) (*entities.ShopAdmin, error) {
 	var admin entities.ShopAdmin
