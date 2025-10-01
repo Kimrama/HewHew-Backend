@@ -19,6 +19,7 @@ type UserRepository interface {
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	Topup(topupModel *entities.TopUp) error
+	GetAllShops() ([]entities.Shop, error)
 }
 
 
