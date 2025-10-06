@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"hewhew-backend/config"
 	"hewhew-backend/database"
+
+	// "hewhew-backend/database/migration"
 	"hewhew-backend/server"
-	//"hewhew-backend/database/migration"
 )
 
 func main() {
@@ -15,8 +16,8 @@ func main() {
 	fmt.Println("config:\n", string(confString))
 
 	database := database.NewPostgresDatabase(conf.Database)
-	
-	//migration.Migrate(database)
+
+	// migration.Migrate(database)
 	server := server.NewFiberServer(conf, database)
 
 	server.Start()
