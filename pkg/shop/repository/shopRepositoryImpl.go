@@ -46,7 +46,7 @@ func (r *ShopRepositoryImpl) DeleteCanteen(canteenName string) error {
 	db := r.db.Connect()
 	err := db.Where("canteen_name = ?", canteenName).Delete(&entities.Canteen{}).Error
 	return err
-	
+
 }
 
 func (r *ShopRepositoryImpl) EditShop(body entities.Shop, shop uuid.UUID) error {
@@ -165,8 +165,11 @@ func (r *ShopRepositoryImpl) GetShopAdminByUsername(username string) (*entities.
 	return &admin, nil
 }
 
-func (r *ShopRepositoryImpl) CreateTag(tagModel *entities.Tag) error {
-	return r.db.Connect().Create(tagModel).Error
+func (r *ShopRepositoryImpl) CreateTag(tagModel *entities.Tag) (*entities.Tag, error) {
+	if err := r.db.Connect().Create(tagModel).Error; err != nil {
+		return nil, err
+	}
+	return tagModel, nil
 }
 
 func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
@@ -176,6 +179,15 @@ func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 		return nil, err
 	}
 	return canteens, nil
+}
+
+func (r *ShopRepositoryImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
+	var menus []*entities.Menu
+	db := r.db.Connect()
+	if err := db.Where("shop_id = ?", shopID).Find(&menus).Error; err != nil {
+		return nil, err
+	}
+	return menus, nil
 }
 
 func (r *ShopRepositoryImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {
@@ -212,5 +224,3 @@ func (r *ShopRepositoryImpl) DeleteTag(tagID string) error {
 	err := db.Where("tag_id = ?", tagID).Delete(&entities.Tag{}).Error
 	return err
 }
-
-

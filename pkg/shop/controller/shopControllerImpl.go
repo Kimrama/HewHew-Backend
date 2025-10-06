@@ -204,6 +204,7 @@ func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"name":         shop.Name,
 		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
+		"state":       shop.State,
 	})
 }
 func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
@@ -302,7 +303,7 @@ func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = s.ShopService.CreateTag(shop.ShopID.String(), &body)
+	tag, err := s.ShopService.CreateTag(shop.ShopID.String(), &body)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -310,8 +311,9 @@ func (s *ShopControllerImpl) Createtag(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.JSON(fiber.Map{"message": "Tag created successfully"})
+	return ctx.JSON(fiber.Map{"tag": tag})
 }
+
 func (c *ShopControllerImpl) GetAllCanteens(ctx *fiber.Ctx) error {
 	canteens, err := c.ShopService.GetAllCanteens()
 	if err != nil {
@@ -454,4 +456,30 @@ func (s *ShopControllerImpl) DeleteTag(ctx *fiber.Ctx) error {
 		})
 	}
 	return ctx.JSON(fiber.Map{"message": "Tag deleted successfully"})
+}
+
+func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
+
+	var req model.GetAllMenusRequest
+
+    if err := ctx.BodyParser(&req); err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "invalid JSON",
+        })
+    }
+
+	shopUUID, err := uuid.Parse(req.ShopID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid shopID format",
+		})
+	}
+	
+	Menus, err := s.ShopService.GetAllMenus(shopUUID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.JSON(fiber.Map{"menus": Menus})
 }

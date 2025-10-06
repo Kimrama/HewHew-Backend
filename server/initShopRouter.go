@@ -22,9 +22,10 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Use(utils.JWTProtected())
 	shopGroup.Put("/", shopController.EditShop)
 	shopGroup.Get("/", shopController.GetShop)
-	shopGroup.Put("/patch", shopController.ChangeState)
+	shopGroup.Patch("/toggle_open_state", shopController.ChangeState)
 	shopGroup.Put("/shopimage", shopController.EditShopImage)
-
+	shopGroup.Get("/menus", shopController.GetAllMenus)
+	
 	shopGroup.Post("/tags", shopController.Createtag)
 	shopGroup.Put("/tags/:tagID", shopController.Edittag)
 	shopGroup.Get("/tags", shopController.GetAllTags)

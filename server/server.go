@@ -39,7 +39,7 @@ func getCORSMiddleware(allowOrigins []string) fiber.Handler {
 	return cors.New(cors.Config{
 		AllowOrigins: strings.Join(allowOrigins, ","),
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowMethods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
 	})
 }
 
