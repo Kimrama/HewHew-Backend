@@ -6,6 +6,7 @@ import (
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/menu/model"
 	"hewhew-backend/pkg/menu/repository"
+	"hewhew-backend/utils"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -124,10 +125,35 @@ func (s *MenuServiceImpl) EditMenu(menuID uuid.UUID, admin *entities.ShopAdmin, 
 		Name:   req.Name,
 		Detail: req.Detail,
 		Price:  price,
-		Status: string(req.Status),
 		Tag1ID: tag1UUID,
 		Tag2ID: tag2UUID,
 	}
 
 	return s.MenuRepository.EditMenu(menu)
+}
+
+func (s *MenuServiceImpl) EditMenuStatus(menuID uuid.UUID, admin *entities.ShopAdmin, status string) error {
+	menu, err := s.MenuRepository.GetMenuByID(menuID)
+	if err != nil {
+		return err
+	}
+	if menu.ShopID != admin.ShopID {
+		return errors.New("unauthorized to edit this menu")
+	}
+	return s.MenuRepository.EditMenuStatus(menuID,status)
+}
+
+func (s *MenuServiceImpl) EditMenuImage(menuID uuid.UUID, admin *entities.ShopAdmin, imageModel *utils.ImageModel) error {
+	menu, err := s.MenuRepository.GetMenuByID(menuID)
+	if err != nil {
+		return err
+	}
+	if menu.ShopID != admin.ShopID {
+		return errors.New("unauthorized to edit this menu")
+	}
+	err = s.MenuRepository.EditMenuImage(menuID, imageModel)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -98,9 +99,60 @@ func (r *MenuRepositoryImpl) EditMenu(menu *entities.Menu) error {
 			"name":    menu.Name,
 			"detail":  menu.Detail,
 			"price":   menu.Price,
-			"status":  menu.Status,
 			"tag1_id": menu.Tag1ID,
 			"tag2_id": menu.Tag2ID,
 		}).Error
 	return err
+}
+
+func (r *MenuRepositoryImpl) EditMenuStatus(menuID uuid.UUID, status string) error {
+	db := r.db.Connect()
+	err := db.Model(&entities.Menu{}).
+		Where("menu_id = ?", menuID).
+		Update("status", status).Error
+	return err
+}
+
+func (r *MenuRepositoryImpl) EditMenuImage(menuID uuid.UUID, imageModel *utils.ImageModel) error {
+	db := r.db.Connect()
+	menu, err := r.GetMenuByID(menuID)
+	if err != nil {
+		return err
+	}
+
+	if menu.ImageURL != "NULL" && menu.ImageURL != "" {
+
+		publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+		objectPath := strings.TrimPrefix(menu.ImageURL, publicPrefixRender)
+
+		deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
+
+		req, _ := http.NewRequest("DELETE", deleteURL, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+			return fmt.Errorf("failed to delete image: %s", resp.Status)
+		}
+	}
+
+	newImageUrl, err := r.UploadMenuImage(menuID, imageModel)
+	if err != nil {
+		return err
+	}
+
+	err = db.Model(&entities.Menu{}).
+		Where("menu_id = ?", menuID).
+		Update("image_url", newImageUrl).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
