@@ -198,3 +198,77 @@ func (c *MenuControllerImpl) EditMenu(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{"message": "Menu updated successfully"})
 }
+
+func (c *MenuControllerImpl) EditMenuStatus(ctx *fiber.Ctx) error {
+	claims, err := utils.GetClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+	}
+	username, ok := claims["username"].(string)
+	if !ok || username == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+	}
+	menuIDParam := ctx.Params("menu_id")
+	if menuIDParam == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "menuID is required"})
+	}
+	menuID, err := uuid.Parse(menuIDParam)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid menuID"})
+	}
+	admin, err := c.ShopService.GetShopAdminByUsername(username)
+	if err != nil || admin == nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin not found"})
+	}
+	status := ctx.FormValue("status")
+	if status!= string(model.MenuStatusAvailable) && status != string(model.MenuStatusUnavailable) {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid status"})
+	}
+
+	if err := c.MenuService.EditMenuStatus(menuID, admin, status); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.JSON(fiber.Map{"message": "Menu status updated successfully"})
+}
+
+func (c *MenuControllerImpl) EditMenuImage(ctx *fiber.Ctx) error {
+	claims, err := utils.GetClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+	}
+	username, ok := claims["username"].(string)
+	if !ok || username == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+	}
+	admin, err := c.ShopService.GetShopAdminByUsername(username)
+	if err != nil || admin == nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin not found"})
+	}
+
+	menuIDParam := ctx.Params("menu_id")
+	if menuIDParam == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "menuID is required"})
+	}
+
+	menuID, err := uuid.Parse(menuIDParam)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid menuID"})
+	}
+	Image, _ := ctx.FormFile("image")
+	var imageModel *utils.ImageModel
+	if Image != nil {
+		preprocessUploadImage, err := utils.PreprocessUploadImage(Image)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Failed to preprocess image",
+			})
+		}
+		imageModel = preprocessUploadImage
+	}
+
+		if err := c.MenuService.EditMenuImage(menuID, admin, imageModel); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.JSON(fiber.Map{"message": "Menu image updated successfully"})
+
+}

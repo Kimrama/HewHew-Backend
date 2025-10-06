@@ -14,6 +14,7 @@ func Migrate(db database.Database) {
 	// base entity (No FK)
 	UserMigration(tx)
 	ShopMigration(tx)
+	DropOffMigration(tx)
 	WasteDropMigration(tx)
 	CanteenMigration(tx)
 	// ==========
@@ -110,4 +111,8 @@ func CanteenMigration(tx *gorm.DB) error {
 func TagMigration(tx *gorm.DB) error {
 	fmt.Println("Migrating Tag table...")
 	return tx.Migrator().CreateTable(&entities.Tag{})
+}
+func DropOffMigration(tx *gorm.DB) error {
+	fmt.Println("Migrating Tag table...")
+	return tx.Migrator().CreateTable(&entities.DropOff{})
 }

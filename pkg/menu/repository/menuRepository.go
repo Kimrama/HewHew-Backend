@@ -14,5 +14,7 @@ type MenuRepository interface {
 	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
 	DeleteMenu(menuID uuid.UUID) error
 	EditMenu(menuEntity *entities.Menu) error
+	EditMenuStatus(menuID uuid.UUID, status string) error
+	EditMenuImage(menuID uuid.UUID, imageModel *utils.ImageModel) error
 	
 }
