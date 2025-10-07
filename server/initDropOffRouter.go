@@ -7,7 +7,7 @@ import (
 )
 
 func (s *fiberServer) initDropOffRouter() {
-	dropOffRepository := _dropOffRepository.NewDropOffRepositoryImpl(s.db)
+	dropOffRepository := _dropOffRepository.NewDropOffRepositoryImpl(s.db, s.conf.Supabase)
 	dropOffService := _dropOffService.NewDropOffServiceImpl(dropOffRepository)
 	dropOffController := _dropOffController.NewDropOffControllerImpl(dropOffService)
 

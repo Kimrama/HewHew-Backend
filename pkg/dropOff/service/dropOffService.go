@@ -8,7 +8,7 @@ import (
 )
 
 type DropOffService interface {
-	CreateDropOff(model *model.DropOffRequest) error
-	GetAllDropOffs() ([]*entities.DropOff, error)
-	GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOff, error)
+	CreateDropOff(model *model.CreateDropOffRequest) error
+	GetAllDropOffs() ([]*entities.DropOffLocation, error)
+	GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOffLocation, error)
 }

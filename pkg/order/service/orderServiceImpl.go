@@ -37,14 +37,14 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 	}
 
 	OrderEntity := &entities.Order{
-		OrderID:         uuid.New(),
-		UserOrderID:     userID,
-		UserDeliveryID:  nil,
-		Status:          "Un Paid",
-		OrderDate:       time.Now(),
-		DeliveryMethod:  string(orderModel.DeliveryMethod),
-		AppointmentTime: orderModel.AppointmentTime,
-		DropOffID:       orderModel.DropOffID,
+		OrderID:           uuid.New(),
+		UserOrderID:       userID,
+		UserDeliveryID:    nil,
+		Status:            "waiting",
+		OrderDate:         time.Now(),
+		DeliveryMethod:    string(orderModel.DeliveryMethod),
+		AppointmentTime:   orderModel.AppointmentTime,
+		DropOffLocationID: orderModel.DropOffID,
 	}
 
 	if err := os.OrderRepository.CreateOrder(OrderEntity); err != nil {
@@ -67,14 +67,54 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 	return nil
 }
 
-// func (os *OrderServiceImpl) GetOrdersByUserID(userID string) (interface{}, error) {
-// 	return os.OrderRepository.GetOrdersByUserID(userID)
-// }
+func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error {
+	order, err := os.OrderRepository.GetOrderByID(acceptOrderModel.OrderID)
+	if err != nil {
+		return fmt.Errorf("order with ID %s not found", acceptOrderModel.OrderID)
+	}
+	if order.Status != "waiting" {
+		return fmt.Errorf("order with ID %s is not in a state to be accepted", acceptOrderModel.OrderID)
+	}
 
-// func (os *OrderServiceImpl) GetOrdersByShopID(shopID string) (interface{}, error) {
-// 	return os.OrderRepository.GetOrdersByShopID(shopID)
-// }
+	if err := os.OrderRepository.AcceptOrder(acceptOrderModel); err != nil {
+		return err
+	}
+	return nil
+}
 
-// func (os *OrderServiceImpl) UpdateOrderStatus(orderID string, status string) error {
-// 	return os.OrderRepository.UpdateOrderStatus(orderID, status)
-// }
+func (os *OrderServiceImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error) {
+	return os.OrderRepository.GetOrdersByUserID(userID)
+}
+
+func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]*entities.Order, error) {
+	adminID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user id: %w", err)
+	}
+	admin, err := os.OrderRepository.GetShopByAdminID(adminID)
+	if err != nil {
+		return nil, fmt.Errorf("admin not found: %w", err)
+	}
+	orders, err := os.OrderRepository.GetOrdersByShopID(admin.ShopID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch orders: %w", err)
+	}
+
+	return orders, nil
+}
+
+func (os *OrderServiceImpl) GetAvailableOrders() ([]*entities.Order, error) {
+	orders, err := os.OrderRepository.GetAvailableOrders()
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch orders: %w", err)
+	}
+	return orders, nil
+}
+
+func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
+	order, err := os.OrderRepository.GetOrderByID(orderID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch order: %w", err)
+	}
+	return order, nil
+}

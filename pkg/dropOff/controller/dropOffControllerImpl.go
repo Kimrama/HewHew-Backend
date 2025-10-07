@@ -3,6 +3,7 @@ package controller
 import (
 	"hewhew-backend/pkg/dropOff/model"
 	"hewhew-backend/pkg/dropOff/service"
+	"hewhew-backend/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -19,14 +20,32 @@ func NewDropOffControllerImpl(DropOffService service.DropOffService) DropOffCont
 }
 
 func (dc *DropOffControllerImpl) CreateDropOff(ctx *fiber.Ctx) error {
-	var model model.DropOffRequest
-	if err := ctx.BodyParser(&model); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid request",
-		})
+	latitude := ctx.FormValue("latitude")
+	longitude := ctx.FormValue("longitude")
+	name := ctx.FormValue("name")
+	detail := ctx.FormValue("detail")
+	image, _ := ctx.FormFile("image")
+
+	var imageModel *utils.ImageModel
+	if image != nil {
+		preprocessUploadImage, err := utils.PreprocessUploadImage(image)
+		if err != nil {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Failed to preprocess image",
+			})
+		}
+		imageModel = preprocessUploadImage
 	}
 
-	if err := dc.DropOffService.CreateDropOff(&model); err != nil {
+	dropoffModel := &model.CreateDropOffRequest{
+		Latitude:  latitude,
+		Longitude: longitude,
+		Name:      name,
+		Detail:    detail,
+		Image:     imageModel,
+	}
+
+	if err := dc.DropOffService.CreateDropOff(dropoffModel); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -37,13 +56,26 @@ func (dc *DropOffControllerImpl) CreateDropOff(ctx *fiber.Ctx) error {
 }
 
 func (dc *DropOffControllerImpl) GetAllDropOffs(ctx *fiber.Ctx) error {
-	dropOffs, err := dc.DropOffService.GetAllDropOffs()
+	dropoffEntities, err := dc.DropOffService.GetAllDropOffs()
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	return ctx.Status(fiber.StatusOK).JSON(dropOffs)
+
+	var dropoffs []model.DropOffDetailResponse
+	for _, entity := range dropoffEntities {
+		dropoff := model.DropOffDetailResponse{
+			Latitude:  entity.Latitude,
+			Longitude: entity.Longitude,
+			Name:      entity.Name,
+			Detail:    entity.Detail,
+			Image:     entity.ImageURL,
+		}
+		dropoffs = append(dropoffs, dropoff)
+	}
+
+	return ctx.JSON(dropoffs)
 }
 
 func (dc *DropOffControllerImpl) GetDropOffByID(ctx *fiber.Ctx) error {

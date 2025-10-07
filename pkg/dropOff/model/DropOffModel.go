@@ -1,6 +1,11 @@
 package model
 
-type DropOffRequest struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
+import "hewhew-backend/utils"
+
+type CreateDropOffRequest struct {
+	Latitude  string
+	Longitude string
+	Name      string
+	Detail    string
+	Image     *utils.ImageModel
 }
