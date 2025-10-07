@@ -4,7 +4,10 @@ import "github.com/gofiber/fiber/v2"
 
 type OrderController interface {
 	CreateOrder(ctx *fiber.Ctx) error
-	GetOrdersByUserID(ctx *fiber.Ctx) error
-	GetOrdersByShopID(ctx *fiber.Ctx) error
-	UpdateOrderStatus(ctx *fiber.Ctx) error
+	AcceptOrder(ctx *fiber.Ctx) error
+	ConfirmOrder(ctx *fiber.Ctx) error
+	GetOrdersByUserID(ctx *fiber.Ctx) error  // for customer
+	GetOrdersByShopID(ctx *fiber.Ctx) error  // for shop admin
+	GetAvailableOrders(ctx *fiber.Ctx) error // for delivery user
+	GetOrderByID(ctx *fiber.Ctx) error
 }

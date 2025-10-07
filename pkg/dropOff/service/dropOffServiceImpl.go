@@ -18,20 +18,35 @@ func NewDropOffServiceImpl(DropOffRepository repository.DropOffRepository) DropO
 	}
 }
 
-func (ds *DropOffServiceImpl) CreateDropOff(model *model.DropOffRequest) error {
-
-	do := &entities.DropOff{
-		DropOffID: uuid.New(),
-		Latitude:  model.Latitude,
-		Longitude: model.Longitude,
+func (ds *DropOffServiceImpl) CreateDropOff(model *model.CreateDropOffRequest) error {
+	DropOffLocationID := uuid.New()
+	imageUrl := ""
+	if model.Image != nil {
+		var err error
+		imageUrl, err = ds.DropOffRepository.UploadDropOffImage(DropOffLocationID, model.Image)
+		if err != nil {
+			return err
+		}
 	}
-	return ds.DropOffRepository.CreateDropOff(do)
+	dropoffEntity := &entities.DropOffLocation{
+		DropOffLocationID: DropOffLocationID,
+		Latitude:          model.Latitude,
+		Longitude:         model.Longitude,
+		Name:              model.Name,
+		Detail:            model.Detail,
+		ImageURL:          imageUrl,
+	}
+	if err := ds.DropOffRepository.CreateDropOff(dropoffEntity); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (ds *DropOffServiceImpl) GetAllDropOffs() ([]*entities.DropOff, error) {
+func (ds *DropOffServiceImpl) GetAllDropOffs() ([]*entities.DropOffLocation, error) {
 	return ds.DropOffRepository.GetAllDropOffs()
 }
 
-func (ds *DropOffServiceImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOff, error) {
+func (ds *DropOffServiceImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOffLocation, error) {
 	return ds.DropOffRepository.GetDropOffByID(dropOffID)
 }

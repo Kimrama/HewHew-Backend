@@ -17,6 +17,9 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Post("/", orderController.CreateOrder)
 	orderGroup.Get("/", orderController.GetOrdersByUserID)
 	orderGroup.Get("/shop", orderController.GetOrdersByShopID)
-	orderGroup.Put("/:order_id/status", orderController.UpdateOrderStatus)
+	orderGroup.Get("/available", orderController.GetAvailableOrders)
+	orderGroup.Get("/:id", orderController.GetOrderByID)
+	orderGroup.Post("/accept", orderController.AcceptOrder)
+	orderGroup.Post("/confirm/:id", orderController.ConfirmOrder)
 
 }
