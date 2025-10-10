@@ -483,3 +483,23 @@ func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(fiber.Map{"menus": Menus})
 }
+
+func (s *ShopControllerImpl) CreateTransactionLog(ctx *fiber.Ctx) error {
+	var body model.TransactionLog
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	// ส่ง model ให้ service แปลงเป็น entity เอง
+	if err := s.ShopService.CreateTransactionLog(&body); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Transaction log created successfully",
+	})
+}

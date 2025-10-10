@@ -172,6 +172,10 @@ func (r *ShopRepositoryImpl) CreateTag(tagModel *entities.Tag) (*entities.Tag, e
 	return tagModel, nil
 }
 
+func (r *ShopRepositoryImpl) CreateTransactionLog(log *entities.TransactionLog) error {
+	return r.db.Connect().Create(log).Error
+}
+
 func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	var canteens []entities.Canteen
 	db := r.db.Connect()
