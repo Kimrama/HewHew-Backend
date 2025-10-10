@@ -7,7 +7,7 @@ import (
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/pkg/shop/repository"
 	"hewhew-backend/utils"
-
+	"time"
 	"github.com/google/uuid"
 )
 
@@ -138,4 +138,25 @@ func (s *ShopServiceImpl) DeleteTag(tagID string) error {
 
 func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
 	return s.ShopRepository.GetAllMenus(shopID)
+}
+
+func (s *ShopServiceImpl) CreateTransactionLog(log *model.TransactionLog) error {
+	targetUserUUID, err := uuid.Parse(log.TargetUserID)
+	if err != nil {
+		return fmt.Errorf("invalid TargetUserID: %v", err)
+	}
+	orderUUID, err := uuid.Parse(log.OrderID)
+	if err != nil {
+		return fmt.Errorf("invalid OrderID: %v", err)
+	}
+
+	entitiesLog := &entities.TransactionLog{
+		TransactionLogID: uuid.New(),
+		TargetUserID:     targetUserUUID,
+		OrderID:          orderUUID,
+		Detail:           log.Detail,
+		Amount:           log.Amount,
+		TimeStamp:        time.Now(),
+	}
+	return s.ShopRepository.CreateTransactionLog(entitiesLog)
 }
