@@ -12,24 +12,25 @@ func Migrate(db database.Database) {
 	tx := db.Connect().Begin()
 
 	// base entity (No FK)
-	UserMigration(tx)
-	ShopMigration(tx)
-	WasteDropMigration(tx)
-	CanteenMigration(tx)
+	// UserMigration(tx)
+	// ShopMigration(tx)
+	DropOffMigration(tx)
+	// WasteDropMigration(tx)
+	// CanteenMigration(tx)
 	// ==========
 
 	// entities relate with base by FK
-	ContactMigration(tx)
-	TopUpMigration(tx)
-	ShopAdminMigration(tx)
-	TagMigration(tx)
-	MenuMigration(tx)
+	// ContactMigration(tx)
+	// TopUpMigration(tx)
+	// ShopAdminMigration(tx)
+	// TagMigration(tx)
+	// MenuMigration(tx)
 	// ==========
 
 	// entities that need user/shop/menu
 	OrderMigration(tx)
-	FavouriteMigration(tx)
-	ReviewMigration(tx)
+	// FavouriteMigration(tx)
+	// ReviewMigration(tx)
 
 	// ===========
 	// entities that need order/menu
@@ -110,4 +111,8 @@ func CanteenMigration(tx *gorm.DB) error {
 func TagMigration(tx *gorm.DB) error {
 	fmt.Println("Migrating Tag table...")
 	return tx.Migrator().CreateTable(&entities.Tag{})
+}
+func DropOffMigration(tx *gorm.DB) error {
+	fmt.Println("Migrating Tag table...")
+	return tx.Migrator().CreateTable(&entities.DropOffLocation{})
 }

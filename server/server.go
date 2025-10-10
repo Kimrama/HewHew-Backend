@@ -57,6 +57,8 @@ func (s *fiberServer) Start() {
 	s.app.Use(LoggerMiddleware)
 
 	// Initialize routes
+	s.initDropOffRouter()
+	s.initOrderRouter()
 	s.initMenuRouter()
 	s.initMiscellaneousRoutes()
 	s.initUserRouter()
