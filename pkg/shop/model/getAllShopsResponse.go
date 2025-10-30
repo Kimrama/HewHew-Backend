@@ -5,5 +5,6 @@ type GetAllShopResponse struct {
 	CanteenName string   `json:"canteen_name"`
 	Address     string   `json:"address"`
 	ImageURL    string   `json:"shopimage_url"`
+	State       bool     `json:"state"`
 	Tags        []string `json:"tags"`
 }
