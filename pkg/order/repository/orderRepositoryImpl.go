@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"hewhew-backend/config"
 	"hewhew-backend/database"
@@ -49,7 +50,7 @@ func (or *OrderRepositoryImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRe
 
 func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
 	db := or.db.Connect()
-	var avg float64
+	var avg sql.NullFloat64
 	err := db.Model(&entities.Review{}).
 		Select("AVG(rating)").
 		Where("user_target_id = ?", userID).
@@ -57,10 +58,10 @@ func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, 
 	if err != nil {
 		return 0, err
 	}
-	if avg == 0 {
+	if !avg.Valid {
 		return 0, nil
 	}
-	return avg, nil
+	return avg.Float64, nil
 }
 
 func (or *OrderRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {
@@ -77,8 +78,8 @@ func (or *OrderRepositoryImpl) ConfirmOrder(orderID uuid.UUID, imageurl string) 
 	err := db.Model(&entities.Order{}).
 		Where("order_id = ? AND status = ?", orderID, "accepted").
 		Updates(map[string]interface{}{
-			"confirm_image_url": imageurl,
-			"status":            "delivered",
+			"confirmation_image_url": imageurl,
+			"status":                 "delivered",
 		}).Error
 	return err
 }

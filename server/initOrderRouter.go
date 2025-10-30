@@ -20,6 +20,7 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Get("/available", orderController.GetAvailableOrders)
 	orderGroup.Get("/:id", orderController.GetOrderByID)
 	orderGroup.Post("/accept", orderController.AcceptOrder)
-	orderGroup.Post("/confirm/:id", orderController.ConfirmOrder)
+	orderGroup.Post("/confirm", orderController.ConfirmOrder)
+	// orderGroup.Delete("/delete/:id", orderController.DeleteOrder)
 
 }

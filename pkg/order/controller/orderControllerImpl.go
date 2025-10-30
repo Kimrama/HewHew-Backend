@@ -155,7 +155,7 @@ func (oc *OrderControllerImpl) DeleteOrder(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID in token"})
 	}
 
-	orderIDstr := ctx.Params("order_id")
+	orderIDstr := ctx.Params("id")
 	orderID, err := uuid.Parse(orderIDstr)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid order ID"})
