@@ -33,12 +33,11 @@ func (r *UserRepositoryImpl) CreateUser(userModel *entities.User) error {
 
 func (r *UserRepositoryImpl) CreateAdmin(adminModel *entities.ShopAdmin) error {
 	return r.db.Connect().Create(adminModel).Error
-}	
+}
 
 func (r *UserRepositoryImpl) CreateShop(shopEntity *entities.Shop) error {
 	return r.db.Connect().Create(shopEntity).Error
 }
-
 
 func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
 	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
@@ -63,7 +62,7 @@ func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to upload image: %s", resp.Status)
 	}
-	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/userProfile/%s", r.supabaseConfig.URL, customName)
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/images/userProfile/%s", r.supabaseConfig.URL, customName)
 	return publicURL, nil
 }
 
@@ -111,7 +110,6 @@ func (r *UserRepositoryImpl) EditUserProfileImage(userID uuid.UUID, imageModel *
 	return nil
 }
 
-
 func (r *UserRepositoryImpl) GetUserByUsername(username string) (*entities.User, error) {
 	var user entities.User
 	db := r.db.Connect()
@@ -130,7 +128,6 @@ func (r *UserRepositoryImpl) GetUserByUserID(userID uuid.UUID) (*entities.User, 
 	return &user, nil
 }
 
-
 func (r *UserRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
 	// ดึง ShopID จากตาราง ShopAdmin
 	var admin entities.ShopAdmin
@@ -145,7 +142,6 @@ func (r *UserRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop
 	}
 	return &shop, nil
 }
-
 
 func (r *UserRepositoryImpl) EditUser(userID uuid.UUID, user *entities.User) error {
 	db := r.db.Connect()
@@ -197,5 +193,3 @@ func (r *UserRepositoryImpl) Topup(topupModel *entities.TopUp) error {
 
 	return nil
 }
-
-

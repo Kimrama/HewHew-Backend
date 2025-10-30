@@ -55,7 +55,7 @@ func (dr *DropOffRepositoryImpl) UploadDropOffImage(DropOffLocationID uuid.UUID,
 		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("failed to upload image: %s, %s", resp.Status, string(body))
 	}
-	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/dropoffImage/%s", dr.supabaseConfig.URL, customName)
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/images/dropoffImage/%s", dr.supabaseConfig.URL, customName)
 	return publicURL, nil
 }
 

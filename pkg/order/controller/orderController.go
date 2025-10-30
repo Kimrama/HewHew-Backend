@@ -6,6 +6,7 @@ type OrderController interface {
 	CreateOrder(ctx *fiber.Ctx) error
 	AcceptOrder(ctx *fiber.Ctx) error
 	ConfirmOrder(ctx *fiber.Ctx) error
+	DeleteOrder(ctx *fiber.Ctx) error
 	GetOrdersByUserID(ctx *fiber.Ctx) error  // for customer
 	GetOrdersByShopID(ctx *fiber.Ctx) error  // for shop admin
 	GetAvailableOrders(ctx *fiber.Ctx) error // for delivery user

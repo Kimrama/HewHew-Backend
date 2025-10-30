@@ -7,9 +7,8 @@ import (
 	"hewhew-backend/utils"
 )
 
-// thiss is New Router
 func (s *fiberServer) initOrderRouter() {
-	orderRepository := _orderRepository.NewOrderRepositoryImpl(s.db)
+	orderRepository := _orderRepository.NewOrderRepositoryImpl(s.db, s.conf.Supabase)
 	orderService := _orderService.NewOrderServiceImpl(orderRepository)
 	orderController := _orderController.NewOrderControllerImpl(orderService)
 
