@@ -230,6 +230,7 @@ func (s *ShopControllerImpl) GetAllShops(ctx *fiber.Ctx) error {
 			Address:     shop.Address,
 			ImageURL:    shop.ImageURL,
 			Tags:        tagNames,
+			State:       shop.State,
 		})
 	}
 

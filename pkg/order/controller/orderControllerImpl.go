@@ -13,7 +13,6 @@ type OrderControllerImpl struct {
 	OrderService service.OrderService
 }
 
-// test
 func NewOrderControllerImpl(OrderService service.OrderService) OrderController {
 	return &OrderControllerImpl{
 		OrderService: OrderService,
