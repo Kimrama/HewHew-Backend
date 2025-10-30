@@ -12,6 +12,7 @@ func (s *fiberServer) initUserRouter() {
 	userService := _userService.NewUserServiceImpl(userRepository)
 	userController := _userController.NewUserControllerImpl(userService)
 	userGroup := s.app.Group("/v1/user")
+	userGroup.Get("/shop", userController.GetAllShops)
 	userGroup.Post("/register", userController.CreateUser)
 	userGroup.Post("/login", userController.LoginUser)
 	userGroup.Use(utils.JWTProtected())
@@ -19,7 +20,6 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Put("/profile_image", userController.EditUserProfileImage)
 	userGroup.Put("/", userController.EditUser)
 	userGroup.Put("/topup", userController.Topup)
-	userGroup.Get("/shop", userController.GetAllShops)
 
 	adminGroup := s.app.Group("/v1/admin")
 	adminGroup.Post("/login", userController.LoginShopAdmin)
