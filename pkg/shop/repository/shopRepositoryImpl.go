@@ -185,6 +185,17 @@ func (r *ShopRepositoryImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	return canteens, nil
 }
 
+func (r *ShopRepositoryImpl) GetAllShops() ([]entities.Shop, error) {
+	var shops []entities.Shop
+	db := r.db.Connect()
+
+	if err := db.Preload("Tags").Find(&shops).Error; err != nil {
+		return nil, err
+	}
+
+	return shops, nil
+}
+
 func (r *ShopRepositoryImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
 	var menus []*entities.Menu
 	db := r.db.Connect()
