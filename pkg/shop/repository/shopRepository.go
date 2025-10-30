@@ -24,4 +24,6 @@ type ShopRepository interface {
 	GetAllTags(shopID string) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
 	GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error)
+	CreateTransactionLog(log *entities.TransactionLog) error
+	CreateNotification(notification *entities.Notification) error
 }
