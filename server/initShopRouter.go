@@ -19,12 +19,12 @@ func (s *fiberServer) initShopRouter() {
 	canteenGroup.Delete("/:canteenName", shopController.DeleteCanteen)
 
 	shopGroup := s.app.Group("/v1/shop")
+	shopGroup.Get("/menus", shopController.GetAllMenus)
 	shopGroup.Use(utils.JWTProtected())
 	shopGroup.Put("/", shopController.EditShop)
 	shopGroup.Get("/", shopController.GetShop)
 	shopGroup.Patch("/toggle_open_state", shopController.ChangeState)
 	shopGroup.Put("/shopimage", shopController.EditShopImage)
-	shopGroup.Get("/menus", shopController.GetAllMenus)
 	shopGroup.Post("/transaction_log", shopController.CreateTransactionLog)
 	
 	shopGroup.Post("/tags", shopController.Createtag)
