@@ -1,20 +1,30 @@
 package repository
 
 import (
+	"bytes"
+	"fmt"
+	"hewhew-backend/config"
 	"hewhew-backend/database"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/order/model"
+	"hewhew-backend/utils"
+	"io"
+	"mime"
+	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type OrderRepositoryImpl struct {
-	db database.Database
+	db             database.Database
+	supabaseConfig *config.Supabase
 }
 
-func NewOrderRepositoryImpl(db database.Database) OrderRepository {
+func NewOrderRepositoryImpl(db database.Database, supabaseConfig *config.Supabase) OrderRepository {
 	return &OrderRepositoryImpl{
-		db: db,
+		db:             db,
+		supabaseConfig: supabaseConfig,
 	}
 }
 
@@ -35,6 +45,74 @@ func (or *OrderRepositoryImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRe
 			"status":           "accepted",
 		}).Error
 	return err
+}
+
+func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
+	db := or.db.Connect()
+	var avg float64
+	err := db.Model(&entities.Review{}).
+		Select("AVG(rating)").
+		Where("user_target_id = ?", userID).
+		Scan(&avg).Error
+	if err != nil {
+		return 0, err
+	}
+	if avg == 0 {
+		return 0, nil
+	}
+	return avg, nil
+}
+
+func (or *OrderRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {
+	db := or.db.Connect()
+	var count int64
+	err := db.Model(&entities.Order{}).
+		Where("user_delivery_id = ? AND status != ?", userID, "finished").
+		Count(&count).Error
+	return count, err
+}
+
+func (or *OrderRepositoryImpl) ConfirmOrder(orderID uuid.UUID, imageurl string) error {
+	db := or.db.Connect()
+	err := db.Model(&entities.Order{}).
+		Where("order_id = ? AND status = ?", orderID, "accepted").
+		Updates(map[string]interface{}{
+			"confirm_image_url": imageurl,
+			"status":            "delivered",
+		}).Error
+	return err
+}
+
+func (or *OrderRepositoryImpl) UploadConfirmImage(orderID uuid.UUID, imageModel *utils.ImageModel) (string, error) {
+	customName := orderID.String() + "_" + fmt.Sprintf("%d", time.Now().Unix())
+
+	mimeType := mime.TypeByExtension(imageModel.Ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	url := fmt.Sprintf("%s/storage/v1/object/images/orderConfirmImage/%s", or.supabaseConfig.URL, customName)
+	req, _ := http.NewRequest("POST", url, bytes.NewReader(imageModel.Body))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", or.supabaseConfig.Key))
+	req.Header.Set("Content-Type", mimeType)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("failed to upload image: %s, %s", resp.Status, string(body))
+	}
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/images/orderConfirmImage/%s", or.supabaseConfig.URL, customName)
+	return publicURL, nil
+}
+
+func (or *OrderRepositoryImpl) DeleteOrder(orderID uuid.UUID) error {
+	return or.db.Connect().Delete(&entities.Order{}, "order_id = ?", orderID).Error
 }
 
 func (or *OrderRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {

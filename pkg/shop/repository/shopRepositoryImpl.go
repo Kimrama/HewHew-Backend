@@ -92,7 +92,7 @@ func (r *ShopRepositoryImpl) UploadShopImage(shopID uuid.UUID, imageModel *utils
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to upload image: %s", resp.Status)
 	}
-	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/shopProfile/%s", r.supabaseConfig.URL, customName)
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/images/shopProfile/%s", r.supabaseConfig.URL, customName)
 	return publicURL, nil
 }
 

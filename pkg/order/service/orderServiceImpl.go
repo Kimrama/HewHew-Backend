@@ -68,6 +68,33 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 }
 
 func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error {
+	rating, err := os.OrderRepository.GetUserAverageRating(acceptOrderModel.DeliveryuserID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch user rating: %v", err)
+	}
+
+	var maxOrders int
+	switch {
+	case rating == 0:
+		maxOrders = 1
+	case rating < 3.5:
+		maxOrders = 1
+	case rating < 4.0:
+		maxOrders = 2
+	case rating < 4.5:
+		maxOrders = 3
+	default:
+		maxOrders = 4
+	}
+
+	count, err := os.OrderRepository.CountActiveOrdersByUser(acceptOrderModel.DeliveryuserID)
+	if err != nil {
+		return fmt.Errorf("failed to count active orders: %v", err)
+	}
+	if count >= int64(maxOrders) {
+		return fmt.Errorf("you have reached the maximum allowed active orders (%d)", maxOrders)
+	}
+
 	order, err := os.OrderRepository.GetOrderByID(acceptOrderModel.OrderID)
 	if err != nil {
 		return fmt.Errorf("order with ID %s not found", acceptOrderModel.OrderID)
@@ -80,6 +107,47 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 		return err
 	}
 	return nil
+}
+
+func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRequest, userID uuid.UUID) error {
+	order, err := os.OrderRepository.GetOrderByID(confirmOrderModel.OrderID)
+	if err != nil {
+		return fmt.Errorf("order with ID %s not found", confirmOrderModel.OrderID)
+	}
+	if *order.UserDeliveryID != userID {
+		return fmt.Errorf("unauthorized: user does not own this order")
+	}
+	if order.Status != "accepted" {
+		return fmt.Errorf("order with ID %s is not in a state to be confirm", confirmOrderModel.OrderID)
+	}
+
+	imageUrl := ""
+	if confirmOrderModel.Image != nil {
+		var err error
+		imageUrl, err = os.OrderRepository.UploadConfirmImage(confirmOrderModel.OrderID, confirmOrderModel.Image)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := os.OrderRepository.ConfirmOrder(confirmOrderModel.OrderID, imageUrl); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (os *OrderServiceImpl) DeleteOrder(orderID uuid.UUID, userID uuid.UUID) error {
+	order, err := os.OrderRepository.GetOrderByID(orderID)
+	if err != nil {
+		return fmt.Errorf("order not found")
+	}
+
+	if order.UserOrderID != userID {
+		return fmt.Errorf("unauthorized to delete this order")
+	}
+
+	return os.OrderRepository.DeleteOrder(orderID)
 }
 
 func (os *OrderServiceImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error) {
