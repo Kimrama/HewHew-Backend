@@ -204,9 +204,40 @@ func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"name":         shop.Name,
 		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
-		"state":       shop.State,
+		"state":        shop.State,
 	})
 }
+
+func (s *ShopControllerImpl) GetAllShops(ctx *fiber.Ctx) error {
+	shops, err := s.ShopService.GetAllShops()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var response []model.GetAllShopResponse
+
+	for _, shop := range shops {
+		var tagNames []string
+		for _, tag := range shop.Tags {
+			tagNames = append(tagNames, tag.Topic)
+		}
+
+		response = append(response, model.GetAllShopResponse{
+			Name:        shop.Name,
+			CanteenName: shop.CanteenName,
+			Address:     shop.Address,
+			ImageURL:    shop.ImageURL,
+			Tags:        tagNames,
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"shops": response,
+	})
+}
+
 func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {
 
 	image, err := ctx.FormFile("Image")
@@ -462,11 +493,11 @@ func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
 
 	var req model.GetAllMenusRequest
 
-    if err := ctx.BodyParser(&req); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid JSON",
-        })
-    }
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid JSON",
+		})
+	}
 
 	shopUUID, err := uuid.Parse(req.ShopID)
 	if err != nil {
@@ -474,7 +505,7 @@ func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
 			"error": "invalid shopID format",
 		})
 	}
-	
+
 	Menus, err := s.ShopService.GetAllMenus(shopUUID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

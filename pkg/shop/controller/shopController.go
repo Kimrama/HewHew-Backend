@@ -11,6 +11,7 @@ type ShopController interface {
 	ChangeState(ctx *fiber.Ctx) error
 	EditShopImage(ctx *fiber.Ctx) error
 	GetAllCanteens(ctx *fiber.Ctx) error
+	GetAllShops(ctx *fiber.Ctx) error
 	Createtag(ctx *fiber.Ctx) error
 	GetTagsByShopIDAndTopic(ctx *fiber.Ctx) error
 	Edittag(ctx *fiber.Ctx) error

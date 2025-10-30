@@ -19,6 +19,7 @@ type ShopService interface {
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
 	CreateTag(ShopID string, body *model.TagCreateRequest) (*entities.Tag, error)
 	GetAllCanteens() ([]entities.Canteen, error)
+	GetAllShops() ([]entities.Shop, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagID string, topic string) error
 	GetAllTags(shopID string) ([]entities.Tag, error)
