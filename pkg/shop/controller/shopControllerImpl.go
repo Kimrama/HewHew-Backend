@@ -503,3 +503,22 @@ func (s *ShopControllerImpl) CreateTransactionLog(ctx *fiber.Ctx) error {
 		"message": "Transaction log created successfully",
 	})
 }
+
+func (s *ShopControllerImpl) CreateNotification(ctx *fiber.Ctx) error {
+	var body model.CreateNotificationRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	if err := s.ShopService.CreateNotification(&body); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Notification created successfully",
+	})
+}

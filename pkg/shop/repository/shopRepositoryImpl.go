@@ -228,3 +228,7 @@ func (r *ShopRepositoryImpl) DeleteTag(tagID string) error {
 	err := db.Where("tag_id = ?", tagID).Delete(&entities.Tag{}).Error
 	return err
 }
+
+func (r *ShopRepositoryImpl) CreateNotification(notification *entities.Notification) error {
+	return r.db.Connect().Create(notification).Error
+}

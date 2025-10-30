@@ -18,4 +18,5 @@ type ShopController interface {
 	DeleteTag(ctx *fiber.Ctx) error
 	GetAllMenus(ctx *fiber.Ctx) error
 	CreateTransactionLog(ctx *fiber.Ctx) error
+	CreateNotification(ctx *fiber.Ctx) error
 }
