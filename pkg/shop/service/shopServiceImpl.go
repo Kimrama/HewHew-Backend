@@ -160,3 +160,26 @@ func (s *ShopServiceImpl) CreateTransactionLog(log *model.TransactionLog) error 
 	}
 	return s.ShopRepository.CreateTransactionLog(entitiesLog)
 }
+
+func (s *ShopServiceImpl) CreateNotification(notification *model.CreateNotificationRequest) error {
+	receiverUUID, err := uuid.Parse(notification.ReceiverID)
+	if err != nil {
+		return fmt.Errorf("invalid ReceiverID: %v", err)
+	}
+
+	orderUUID, err := uuid.Parse(notification.OrderID)
+	if err != nil {
+		return fmt.Errorf("invalid OrderID: %v", err)
+	}
+
+	notificationEntity := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        orderUUID,
+		ReceiverID:     receiverUUID,
+		Topic:          notification.Topic,
+		Message:        notification.Message,
+		TimeStamp:      time.Now(),
+	}
+
+	return s.ShopRepository.CreateNotification(notificationEntity)
+}
