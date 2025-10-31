@@ -313,10 +313,35 @@ func (oc *OrderControllerImpl) CreateReview(ctx *fiber.Ctx) error {
 	})
 }
 
-func (oc *OrderControllerImpl) GetReviewsByeTargetUserID(ctx *fiber.Ctx) error {
-	return nil
+func (oc *OrderControllerImpl) GetReviewsByTargetUserID(ctx *fiber.Ctx) error {
+	userIDStr := ctx.Params("targetUserID")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+
+	reviews, err := oc.OrderService.GetReviewsByTargetUserID(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(reviews)
 }
 
-func (oc *OrderControllerImpl) GetReviewsByID(ctx *fiber.Ctx) error {
-	return nil
+func (oc *OrderControllerImpl) GetReviewByID(ctx *fiber.Ctx) error {
+	reviewIDStr := ctx.Params("reviewID")
+	reviewID, err := uuid.Parse(reviewIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid review ID"})
+	}
+
+	review, err := oc.OrderService.GetReviewByID(reviewID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	if review == nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "review not found"})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(review)
 }

@@ -19,4 +19,6 @@ type OrderService interface {
 	GetUserAverageRating(userID uuid.UUID) (float64, error)
 
 	CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
+	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
 }

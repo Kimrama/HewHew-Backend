@@ -16,6 +16,6 @@ type OrderController interface {
 	GetUserAverageRating(ctx *fiber.Ctx) error
 
 	CreateReview(ctx *fiber.Ctx) error
-	GetReviewsByeTargetUserID(ctx *fiber.Ctx) error
-	GetReviewsByID(ctx *fiber.Ctx) error
+	GetReviewsByTargetUserID(ctx *fiber.Ctx) error
+	GetReviewByID(ctx *fiber.Ctx) error
 }

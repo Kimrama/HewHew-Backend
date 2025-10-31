@@ -196,3 +196,25 @@ func (or *OrderRepositoryImpl) CreateReview(reviewEntity *entities.Review) error
 	}
 	return nil
 }
+
+func (or *OrderRepositoryImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	db := or.db.Connect()
+	var reviews []*entities.Review
+	err := db.Where("user_target_id = ?", userID).
+		Order("time_stamp DESC").
+		Find(&reviews).Error
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
+}
+
+func (or *OrderRepositoryImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
+	db := or.db.Connect()
+	var review entities.Review
+	err := db.Where("review_id = ?", reviewID).First(&review).Error
+	if err != nil {
+		return nil, err
+	}
+	return &review, nil
+}

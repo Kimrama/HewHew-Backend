@@ -207,3 +207,11 @@ func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest,
 	}
 	return nil
 }
+
+func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	return os.OrderRepository.GetReviewsByTargetUserID(userID)
+}
+
+func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
+	return os.OrderRepository.GetReviewByID(reviewID)
+}

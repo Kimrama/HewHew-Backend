@@ -23,8 +23,11 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Post("/confirm", orderController.ConfirmOrder)
 	// orderGroup.Delete("/delete/:id", orderController.DeleteOrder)
 
-	orderGroup.Get("/rating/average", orderController.GetUserAverageRating)
-
-	orderGroup.Post("/review", orderController.CreateReview)
+	reviewGroup := s.app.Group("/v1/review")
+	reviewGroup.Use(utils.JWTProtected())
+	reviewGroup.Get("/averagerating", orderController.GetUserAverageRating)
+	reviewGroup.Get("/user/:targetUserID", orderController.GetReviewsByTargetUserID)
+	reviewGroup.Get("/:reviewID", orderController.GetReviewByID)
+	reviewGroup.Post("/", orderController.CreateReview)
 
 }
