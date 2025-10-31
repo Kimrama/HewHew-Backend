@@ -1,5 +1,5 @@
 package model
 
 type GetAllMenusRequest struct {
-	ShopID string `json:"shopid"`
+	ShopID string `json:"shop_id"`
 }
