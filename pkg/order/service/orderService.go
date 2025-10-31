@@ -10,7 +10,8 @@ import (
 type OrderService interface {
 	CreateOrder(orderModel *model.CreateOrderRequest, userID uuid.UUID) error
 	AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error
-	// ConfirmOrder(confirmOrderModel *model.ConfirmOrderRequest) error
+	ConfirmOrder(confirmOrderModel *model.ConfirmOrderRequest, userID uuid.UUID) error
+	DeleteOrder(orderID uuid.UUID, userID uuid.UUID) error
 	GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error)
 	GetOrdersByShopID(userID string) ([]*entities.Order, error)
 	GetAvailableOrders() ([]*entities.Order, error)

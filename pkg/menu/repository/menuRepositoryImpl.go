@@ -61,7 +61,7 @@ func (r *MenuRepositoryImpl) UploadMenuImage(menuID uuid.UUID, imageModel *utils
 		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("failed to upload image: %s, %s", resp.Status, string(body))
 	}
-	publicURL := fmt.Sprintf("%s/storage/v1/render/image/public/images/menuImage/%s", r.supabaseConfig.URL, customName)
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/images/menuImage/%s", r.supabaseConfig.URL, customName)
 	return publicURL, nil
 }
 

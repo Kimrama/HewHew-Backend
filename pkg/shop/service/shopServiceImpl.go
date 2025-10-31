@@ -8,6 +8,7 @@ import (
 	"hewhew-backend/pkg/shop/repository"
 	"hewhew-backend/utils"
 	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -105,6 +106,10 @@ func (s *ShopServiceImpl) GetShopAdminByUsername(username string) (*entities.Sho
 
 func (s *ShopServiceImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	return s.ShopRepository.GetAllCanteens()
+}
+
+func (s *ShopServiceImpl) GetAllShops() ([]entities.Shop, error) {
+	return s.ShopRepository.GetAllShops()
 }
 
 func (s *ShopServiceImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {

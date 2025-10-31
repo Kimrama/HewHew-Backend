@@ -20,6 +20,7 @@ func (s *fiberServer) initShopRouter() {
 
 	shopGroup := s.app.Group("/v1/shop")
 	shopGroup.Get("/menus", shopController.GetAllMenus)
+	shopGroup.Get("/shops", shopController.GetAllShops)
 	shopGroup.Use(utils.JWTProtected())
 	shopGroup.Put("/", shopController.EditShop)
 	shopGroup.Get("/", shopController.GetShop)
@@ -27,7 +28,7 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Put("/shopimage", shopController.EditShopImage)
 	shopGroup.Post("/transaction_log", shopController.CreateTransactionLog)
 	shopGroup.Post("/notification", shopController.CreateNotification)
-	
+
 	shopGroup.Post("/tags", shopController.Createtag)
 	shopGroup.Put("/tags/:tagID", shopController.Edittag)
 	shopGroup.Get("/tags", shopController.GetAllTags)
