@@ -479,17 +479,18 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 	}
 
 	return &model.GetOrderResponse{
-		OrderID:         order.OrderID,
-		UserOrderID:     order.UserOrderID,
-		UserDeliveryID:  order.UserDeliveryID,
-		Status:          order.Status,
-		OrderDate:       order.OrderDate,
-		DeliveryMethod:  order.DeliveryMethod,
-		AppointmentTime: order.AppointmentTime,
-		MenuQuantity:    menuQuantityResp,
-		ShopName:        shop.Name,
-		CanteenName:     canteen.CanteenName,
-		ShippingFee:     shippingFee,
-		Amount:          order.TransactionLog.Amount,
+		OrderID:           order.OrderID,
+		UserOrderID:       order.UserOrderID,
+		UserDeliveryID:    order.UserDeliveryID,
+		Status:            order.Status,
+		OrderDate:         order.OrderDate,
+		DeliveryMethod:    order.DeliveryMethod,
+		AppointmentTime:   order.AppointmentTime,
+		DropOffLocationID: order.DropOffLocationID,
+		MenuQuantity:      menuQuantityResp,
+		ShopName:          shop.Name,
+		CanteenName:       canteen.CanteenName,
+		ShippingFee:       shippingFee,
+		Amount:            order.TransactionLog.Amount,
 	}, nil
 }
