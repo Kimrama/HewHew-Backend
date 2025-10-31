@@ -15,6 +15,7 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Get("/shop", userController.GetAllShops)
 	userGroup.Post("/register", userController.CreateUser)
 	userGroup.Post("/login", userController.LoginUser)
+	userGroup.Get("/:userID", userController.GetUserByID)
 	userGroup.Use(utils.JWTProtected())
 	userGroup.Get("/", userController.GetUser)
 	userGroup.Put("/profile_image", userController.EditUserProfileImage)

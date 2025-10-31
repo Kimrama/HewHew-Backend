@@ -177,6 +177,30 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 	return ctx.JSON(user)
 }
 
+func (c *UserControllerImpl) GetUserByID(ctx *fiber.Ctx) error {
+	userIDParam := ctx.Params("userID")
+	userUUID, err := uuid.Parse(userIDParam)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID",
+		})
+	}
+	userEntity, err := c.userService.GetUserByUserID(userUUID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to retrieve user",
+		})
+	}
+	user := &model.UserDetailResponse{
+		Username:        userEntity.Username,
+		FName:           userEntity.FName,
+		LName:           userEntity.LName,
+		Gender:          userEntity.Gender,
+		ProfileImageURL: userEntity.ProfileImageURL,
+	}
+	return ctx.JSON(user)
+}
+
 func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
 	claims, err := getClaimsFromToken(ctx)
 	if err != nil {
@@ -209,7 +233,7 @@ func (c *UserControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"name":         shop.Name,
 		"canteen_name": shop.CanteenName,
 		"shopimg":      shop.ImageURL,
-		"state":       shop.State,
+		"state":        shop.State,
 	})
 }
 

@@ -49,6 +49,15 @@ func (r *ShopRepositoryImpl) DeleteCanteen(canteenName string) error {
 
 }
 
+func (r *ShopRepositoryImpl) GetCanteenByName(canteenName string) (*entities.Canteen, error) {
+	var canteen entities.Canteen
+	db := r.db.Connect()
+	if err := db.Where("canteen_name = ?", canteenName).First(&canteen).Error; err != nil {
+		return nil, err
+	}
+	return &canteen, nil
+}
+
 func (r *ShopRepositoryImpl) EditShop(body entities.Shop, shop uuid.UUID) error {
 	db := r.db.Connect()
 	err := db.Model(&entities.Shop{}).
@@ -194,6 +203,15 @@ func (r *ShopRepositoryImpl) GetAllShops() ([]entities.Shop, error) {
 	}
 
 	return shops, nil
+}
+func (r *ShopRepositoryImpl) GetShopByID(shopID uuid.UUID) (*entities.Shop, error) {
+	db := r.db.Connect()
+	var shop entities.Shop
+	err := db.Preload("Menus").Preload("Tags").First(&shop, "shop_id = ?", shopID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &shop, nil
 }
 
 func (r *ShopRepositoryImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
