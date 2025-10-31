@@ -246,11 +246,14 @@ func (oc *OrderControllerImpl) GetOrderByID(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid order ID"})
 	}
-	order, err := oc.OrderService.GetOrderByID(orderID)
+	orderModel, err := oc.OrderService.GetOrderByID(orderID)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch order"})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return ctx.JSON(order)
+	if orderModel == nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "order not found"})
+	}
+	return ctx.JSON(orderModel)
 }
 
 func (oc *OrderControllerImpl) GetUserAverageRating(ctx *fiber.Ctx) error {

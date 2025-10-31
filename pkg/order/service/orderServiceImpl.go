@@ -1,10 +1,13 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/order/model"
 	"hewhew-backend/pkg/order/repository"
+	"math"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -179,12 +182,66 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]*entities.Order, error) {
 	return orders, nil
 }
 
-func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
+func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.OrderResponse, error) {
 	order, err := os.OrderRepository.GetOrderByID(orderID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch order: %w", err)
+		return nil, err
 	}
-	return order, nil
+	if order == nil || len(order.MenuQuantity) == 0 {
+		return nil, errors.New("order not found or has no menu items")
+	}
+
+	firstMenu, err := os.OrderRepository.GetMenuByID(order.MenuQuantity[0].MenuID)
+	if err != nil {
+		return nil, err
+	}
+
+	shop, err := os.OrderRepository.GetShopByID(firstMenu.ShopID)
+	if err != nil {
+		return nil, err
+	}
+
+	canteen, err := os.OrderRepository.GetCanteenByName(shop.CanteenName)
+	if err != nil {
+		return nil, err
+	}
+
+	dropOff, err := os.OrderRepository.GetDropOffByID(order.DropOffLocationID)
+	if err != nil {
+		return nil, err
+	}
+
+	cLat, _ := strconv.ParseFloat(canteen.Latitude, 64)
+	cLon, _ := strconv.ParseFloat(canteen.Longitude, 64)
+	dLat, _ := strconv.ParseFloat(dropOff.Latitude, 64)
+	dLon, _ := strconv.ParseFloat(dropOff.Longitude, 64)
+
+	distance := calculateDistance(cLat, cLon, dLat, dLon)
+	shippingFee := calculateShippingFee(distance)
+
+	var menuQuantityResp []model.MenuQuantityResponse
+	for _, mq := range order.MenuQuantity {
+		menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
+			MenuID:   mq.MenuID,
+			Quantity: mq.Quantity,
+		})
+	}
+
+	return &model.OrderResponse{
+		OrderID:              order.OrderID,
+		UserOrderID:          order.UserOrderID,
+		UserDeliveryID:       order.UserDeliveryID,
+		Status:               order.Status,
+		OrderDate:            order.OrderDate,
+		DeliveryMethod:       order.DeliveryMethod,
+		ConfirmationImageURL: order.ConfirmationImageURL,
+		AppointmentTime:      order.AppointmentTime,
+		DropOffLocationID:    order.DropOffLocationID,
+		MenuQuantity:         menuQuantityResp,
+		ShopName:             shop.Name,
+		CanteenName:          canteen.CanteenName,
+		ShippingFee:          shippingFee,
+	}, nil
 }
 
 func (os *OrderServiceImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
@@ -214,4 +271,21 @@ func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entit
 
 func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
 	return os.OrderRepository.GetReviewByID(reviewID)
+}
+
+func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371
+	dLat := (lat2 - lat1) * math.Pi / 180
+	dLon := (lon2 - lon1) * math.Pi / 180
+
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*math.Pi/180)*math.Cos(lat2*math.Pi/180)*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	return R * c
+}
+
+func calculateShippingFee(distanceKm float64) float64 {
+	return math.Round(distanceKm*10*100) / 100
 }
