@@ -11,7 +11,7 @@ type MenuQuantityResponse struct {
 	Quantity int       `json:"quantity"`
 }
 
-type OrderResponse struct {
+type GetOrderByIdResponse struct {
 	OrderID              uuid.UUID              `json:"order_id"`
 	UserOrderID          uuid.UUID              `json:"user_order_id"`
 	UserDeliveryID       *uuid.UUID             `json:"user_delivery_id,omitempty"`
