@@ -29,4 +29,7 @@ type ShopRepository interface {
 	GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error)
 	CreateTransactionLog(log *entities.TransactionLog) error
 	CreateNotification(notification *entities.Notification) error
+	GetDropOffByID(id uuid.UUID) (*entities.DropOffLocation, error)
+	GetOrderByID(orderID uuid.UUID) (*entities.Order, error)
+	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
 }

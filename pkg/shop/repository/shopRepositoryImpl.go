@@ -261,3 +261,28 @@ func (r *ShopRepositoryImpl) DeleteTag(tagID string) error {
 func (r *ShopRepositoryImpl) CreateNotification(notification *entities.Notification) error {
 	return r.db.Connect().Create(notification).Error
 }
+
+func (r *ShopRepositoryImpl) GetDropOffByID(id uuid.UUID) (*entities.DropOffLocation, error) {
+	db := r.db.Connect()
+	var dropOff entities.DropOffLocation
+	err := db.First(&dropOff, "drop_off_location_id = ?", id).Error
+	return &dropOff, err
+}
+
+func (r *ShopRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
+	db := r.db.Connect()
+	var order entities.Order
+	err := db.Preload("MenuQuantity").First(&order, "order_id = ?", orderID).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &order, nil
+}
+
+func (r *ShopRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
+	db := r.db.Connect()
+	var menu entities.Menu
+	err := db.First(&menu, "menu_id = ?", menuID).Error
+	return &menu, err
+}
