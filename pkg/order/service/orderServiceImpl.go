@@ -169,11 +169,24 @@ func (os *OrderServiceImpl) DeleteOrder(orderID uuid.UUID, userID uuid.UUID) err
 	return os.OrderRepository.DeleteOrder(orderID)
 }
 
-func (os *OrderServiceImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error) {
-	return os.OrderRepository.GetOrdersByUserID(userID)
+func (os *OrderServiceImpl) GetOrdersByUserID(userID uuid.UUID) ([]model.GetOrderResponse, error) {
+	orders, err := os.OrderRepository.GetOrdersByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var responses []model.GetOrderResponse
+	for _, order := range orders {
+		resp, err := os.buildOrderResponse(order)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, *resp)
+	}
+	return responses, nil
 }
 
-func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]*entities.Order, error) {
+func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]model.GetOrderResponse, error) {
 	adminID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user id: %w", err)
@@ -182,16 +195,38 @@ func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]*entities.Order,
 	if err != nil {
 		return nil, fmt.Errorf("admin not found: %w", err)
 	}
+
 	orders, err := os.OrderRepository.GetOrdersByShopID(admin.ShopID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch orders: %w", err)
+		return nil, err
 	}
 
-	return orders, nil
+	var responses []model.GetOrderResponse
+	for _, order := range orders {
+		resp, err := os.buildOrderResponse(order)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, *resp)
+	}
+	return responses, nil
 }
 
-func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error) {
-	return os.OrderRepository.GetOrderByDeliveryUserID(userID)
+func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]model.GetOrderResponse, error) {
+	orders, err := os.OrderRepository.GetOrderByDeliveryUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var responses []model.GetOrderResponse
+	for _, order := range orders {
+		resp, err := os.buildOrderResponse(order)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, *resp)
+	}
+	return responses, nil
 }
 
 func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderResponse, error) {
@@ -373,4 +408,60 @@ func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 
 func calculateShippingFee(distanceKm float64) float64 {
 	return math.Round(distanceKm*10*100) / 100
+}
+
+func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.GetOrderResponse, error) {
+	if order == nil || len(order.MenuQuantity) == 0 {
+		return nil, errors.New("order not found or has no menu items")
+	}
+
+	firstMenu, err := os.OrderRepository.GetMenuByID(order.MenuQuantity[0].MenuID)
+	if err != nil {
+		return nil, err
+	}
+
+	shop, err := os.OrderRepository.GetShopByID(firstMenu.ShopID)
+	if err != nil {
+		return nil, err
+	}
+
+	canteen, err := os.OrderRepository.GetCanteenByName(shop.CanteenName)
+	if err != nil {
+		return nil, err
+	}
+
+	dropOff, err := os.OrderRepository.GetDropOffByID(order.DropOffLocationID)
+	if err != nil {
+		return nil, err
+	}
+
+	cLat, _ := strconv.ParseFloat(canteen.Latitude, 64)
+	cLon, _ := strconv.ParseFloat(canteen.Longitude, 64)
+	dLat, _ := strconv.ParseFloat(dropOff.Latitude, 64)
+	dLon, _ := strconv.ParseFloat(dropOff.Longitude, 64)
+
+	distance := calculateDistance(cLat, cLon, dLat, dLon)
+	shippingFee := calculateShippingFee(distance)
+
+	var menuQuantityResp []model.MenuQuantityResponse
+	for _, mq := range order.MenuQuantity {
+		menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
+			MenuID:   mq.MenuID,
+			Quantity: mq.Quantity,
+		})
+	}
+
+	return &model.GetOrderResponse{
+		OrderID:         order.OrderID,
+		UserOrderID:     order.UserOrderID,
+		UserDeliveryID:  order.UserDeliveryID,
+		Status:          order.Status,
+		OrderDate:       order.OrderDate,
+		DeliveryMethod:  order.DeliveryMethod,
+		AppointmentTime: order.AppointmentTime,
+		MenuQuantity:    menuQuantityResp,
+		ShopName:        shop.Name,
+		CanteenName:     canteen.CanteenName,
+		ShippingFee:     shippingFee,
+	}, nil
 }
