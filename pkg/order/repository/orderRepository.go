@@ -18,6 +18,7 @@ type OrderRepository interface {
 	DeleteOrder(orderID uuid.UUID) error
 	UploadConfirmImage(orderID uuid.UUID, imageModel *utils.ImageModel) (string, error)
 	GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error)
+	GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error)
 	GetOrdersByShopID(shopID uuid.UUID) ([]*entities.Order, error)
 	GetAvailableOrders() ([]*entities.Order, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)

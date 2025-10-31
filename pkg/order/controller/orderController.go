@@ -9,9 +9,10 @@ type OrderController interface {
 	AcceptOrder(ctx *fiber.Ctx) error
 	ConfirmOrder(ctx *fiber.Ctx) error
 	DeleteOrder(ctx *fiber.Ctx) error
-	GetOrdersByUserID(ctx *fiber.Ctx) error  // for customer
-	GetOrdersByShopID(ctx *fiber.Ctx) error  // for shop admin
-	GetAvailableOrders(ctx *fiber.Ctx) error // for delivery user
+	GetOrdersByUserID(ctx *fiber.Ctx) error        // for customer
+	GetOrderByDeliveryUserID(ctx *fiber.Ctx) error // for delivery user
+	GetOrdersByShopID(ctx *fiber.Ctx) error        // for shop admin
+	GetAvailableOrders(ctx *fiber.Ctx) error       // for delivery user
 	GetOrderByID(ctx *fiber.Ctx) error
 	GetUserAverageRating(ctx *fiber.Ctx) error
 

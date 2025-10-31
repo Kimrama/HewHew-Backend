@@ -24,6 +24,8 @@ func NewOrderServiceImpl(OrderRepository repository.OrderRepository) OrderServic
 }
 
 func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, userID uuid.UUID) error {
+	var canteenName string
+
 	for _, item := range orderModel.Menu {
 		menu, err := os.OrderRepository.GetMenuByID(item.MenuID)
 		if err != nil {
@@ -31,6 +33,17 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 		}
 		if menu.Status != "available" {
 			return fmt.Errorf("menu %s is not available", menu.Name)
+		}
+
+		shop, err := os.OrderRepository.GetShopByID(menu.ShopID)
+		if err != nil {
+			return fmt.Errorf("shop with ID %s not found for menu %s", menu.ShopID, menu.Name)
+		}
+
+		if canteenName == "" {
+			canteenName = shop.CanteenName
+		} else if shop.CanteenName != canteenName {
+			return fmt.Errorf("all menus must be from the same canteen; found %s and %s", canteenName, shop.CanteenName)
 		}
 	}
 
@@ -55,6 +68,9 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 	}
 
 	for _, item := range orderModel.Menu {
+		if item.Quantity <= 0 {
+			return fmt.Errorf("invalid quantity %d for menu ID %s", item.Quantity, item.MenuID)
+		}
 		menuQuantityEntity := &entities.MenuQuantity{
 			MenuQuantityID: uuid.New(),
 			MenuID:         item.MenuID,
@@ -172,6 +188,10 @@ func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]*entities.Order,
 	}
 
 	return orders, nil
+}
+
+func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error) {
+	return os.OrderRepository.GetOrderByDeliveryUserID(userID)
 }
 
 func (os *OrderServiceImpl) GetAvailableOrders() ([]*entities.Order, error) {

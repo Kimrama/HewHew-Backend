@@ -137,12 +137,13 @@ func (c *MenuControllerImpl) GetMenuByID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	menuEntity, err := c.MenuService.GetMenuByID(menuID)
+	menuEntity, tags, err := c.MenuService.GetMenuByID(menuID)
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "menu not found",
 		})
 	}
+
 	menu := &model.GetMenuByIDResponse{
 		MenuID:   menuEntity.MenuID,
 		Name:     menuEntity.Name,
@@ -150,8 +151,7 @@ func (c *MenuControllerImpl) GetMenuByID(ctx *fiber.Ctx) error {
 		Price:    menuEntity.Price,
 		Status:   string(menuEntity.Status),
 		ImageURL: menuEntity.ImageURL,
-		Tag1ID:   menuEntity.Tag1ID,
-		Tag2ID:   menuEntity.Tag1ID,
+		Tags:     tags,
 	}
 
 	return ctx.JSON(menu)
