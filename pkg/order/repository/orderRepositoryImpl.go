@@ -119,15 +119,6 @@ func (or *OrderRepositoryImpl) DeleteOrder(orderID uuid.UUID) error {
 	return or.db.Connect().Delete(&entities.Order{}, "order_id = ?", orderID).Error
 }
 
-func (or *OrderRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
-	var order entities.Order
-	err := or.db.Connect().Where("order_id = ?", orderID).First(&order).Error
-	if err != nil {
-		return nil, err
-	}
-	return &order, nil
-}
-
 func (or *OrderRepositoryImpl) GetOrdersByShopID(shopID uuid.UUID) ([]*entities.Order, error) {
 	var orders []*entities.Order
 	db := or.db.Connect()
@@ -171,24 +162,6 @@ func (or *OrderRepositoryImpl) GetAvailableOrders() ([]*entities.Order, error) {
 	return orders, err
 }
 
-func (or *OrderRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
-	var menu entities.Menu
-	err := or.db.Connect().Where("menu_id = ?", menuID).First(&menu).Error
-	if err != nil {
-		return nil, err
-	}
-	return &menu, nil
-}
-
-func (or *OrderRepositoryImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOffLocation, error) {
-	var dropOff entities.DropOffLocation
-	err := or.db.Connect().Where("drop_off_location_id = ?", dropOffID).First(&dropOff).Error
-	if err != nil {
-		return nil, err
-	}
-	return &dropOff, nil
-}
-
 func (or *OrderRepositoryImpl) CreateReview(reviewEntity *entities.Review) error {
 	err := or.db.Connect().Create(reviewEntity).Error
 	if err != nil {
@@ -217,4 +190,39 @@ func (or *OrderRepositoryImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Revi
 		return nil, err
 	}
 	return &review, nil
+}
+
+func (or *OrderRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
+	db := or.db.Connect()
+	var order entities.Order
+	err := db.Preload("MenuQuantity").First(&order, "order_id = ?", orderID).Error
+	return &order, err
+}
+
+func (or *OrderRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
+	db := or.db.Connect()
+	var menu entities.Menu
+	err := db.First(&menu, "menu_id = ?", menuID).Error
+	return &menu, err
+}
+
+func (or *OrderRepositoryImpl) GetShopByID(shopID uuid.UUID) (*entities.Shop, error) {
+	db := or.db.Connect()
+	var shop entities.Shop
+	err := db.First(&shop, "shop_id = ?", shopID).Error
+	return &shop, err
+}
+
+func (or *OrderRepositoryImpl) GetCanteenByName(name string) (*entities.Canteen, error) {
+	db := or.db.Connect()
+	var canteen entities.Canteen
+	err := db.First(&canteen, "canteen_name = ?", name).Error
+	return &canteen, err
+}
+
+func (or *OrderRepositoryImpl) GetDropOffByID(id uuid.UUID) (*entities.DropOffLocation, error) {
+	db := or.db.Connect()
+	var dropOff entities.DropOffLocation
+	err := db.First(&dropOff, "drop_off_location_id = ?", id).Error
+	return &dropOff, err
 }
