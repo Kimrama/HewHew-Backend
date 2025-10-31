@@ -294,6 +294,7 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 			ShopName:          shop.Name,
 			CanteenName:       canteen.CanteenName,
 			ShippingFee:       shippingFee,
+			Amount:            order.TransactionLog.Amount,
 		}
 
 		responses = append(responses, resp)
@@ -361,6 +362,7 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.GetOrderById
 		ShopName:             shop.Name,
 		CanteenName:          canteen.CanteenName,
 		ShippingFee:          shippingFee,
+		Amount:               order.TransactionLog.Amount,
 	}, nil
 }
 
@@ -488,5 +490,6 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 		ShopName:        shop.Name,
 		CanteenName:     canteen.CanteenName,
 		ShippingFee:     shippingFee,
+		Amount:          order.TransactionLog.Amount,
 	}, nil
 }

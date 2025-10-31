@@ -150,7 +150,10 @@ func (or *OrderRepositoryImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.
 	db := or.db.Connect()
 	var orders []*entities.Order
 
-	err := db.Where("user_order_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
+	err := db.Where("user_order_id = ?", userID).
+		Preload("MenuQuantity").
+		Preload("TransactionLog").
+		Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +172,10 @@ func (or *OrderRepositoryImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*en
 	db := or.db.Connect()
 	var orders []*entities.Order
 
-	err := db.Where("user_delivery_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
+	err := db.Where("user_delivery_id = ?", userID).
+		Preload("MenuQuantity").
+		Preload("TransactionLog").
+		Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
@@ -203,6 +209,7 @@ func (or *OrderRepositoryImpl) GetAvailableOrders() ([]*entities.Order, error) {
 	var orders []*entities.Order
 
 	if err := db.Preload("MenuQuantity").
+		Preload("TransactionLog").
 		Where("status = ?", "waiting").
 		Find(&orders).Error; err != nil {
 		return nil, err
@@ -251,7 +258,9 @@ func (or *OrderRepositoryImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Revi
 func (or *OrderRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, error) {
 	db := or.db.Connect()
 	var order entities.Order
-	err := db.Preload("MenuQuantity").First(&order, "order_id = ?", orderID).Error
+	err := db.Preload("MenuQuantity").
+		Preload("TransactionLog").
+		First(&order, "order_id = ?", orderID).Error
 	if err != nil {
 		return nil, err
 	}
