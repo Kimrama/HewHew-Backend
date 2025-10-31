@@ -12,6 +12,7 @@ type MenuRepository interface {
 	UploadMenuImage(menuID uuid.UUID, imageModel *utils.ImageModel) (string, error)
 	GetMenusByShopID(shopID uuid.UUID) ([]*entities.Menu, error)
 	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
+	GetTagByID(tagID uuid.UUID) (*entities.Tag, error)
 	DeleteMenu(menuID uuid.UUID) error
 	EditMenu(menuEntity *entities.Menu) error
 	EditMenuStatus(menuID uuid.UUID, status string) error

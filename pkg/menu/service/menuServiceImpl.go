@@ -77,10 +77,32 @@ func (s *MenuServiceImpl) GetMenusByShopID(shopID uuid.UUID) ([]*entities.Menu, 
 	return s.MenuRepository.GetMenusByShopID(shopID)
 }
 
-func (s *MenuServiceImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
-	return s.MenuRepository.GetMenuByID(menuID)
-}
+func (s *MenuServiceImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, []string, error) {
+	menu, err := s.MenuRepository.GetMenuByID(menuID)
+	if err != nil {
+		return nil, nil, err
+	}
 
+	var tags []string
+
+	if menu.Tag1ID != nil {
+		tag1, err := s.MenuRepository.GetTagByID(*menu.Tag1ID)
+		if err == nil {
+			tags = append(tags, tag1.Topic)
+		}
+	}
+
+	if menu.Tag2ID != nil {
+		if menu.Tag1ID == nil || *menu.Tag2ID != *menu.Tag1ID {
+			tag2, err := s.MenuRepository.GetTagByID(*menu.Tag2ID)
+			if err == nil {
+				tags = append(tags, tag2.Topic)
+			}
+		}
+	}
+
+	return menu, tags, nil
+}
 func (s *MenuServiceImpl) DeleteMenu(menuID uuid.UUID, admin *entities.ShopAdmin) error {
 	menu, err := s.MenuRepository.GetMenuByID(menuID)
 	if err != nil {

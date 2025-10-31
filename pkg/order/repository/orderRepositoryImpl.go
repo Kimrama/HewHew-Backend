@@ -71,7 +71,7 @@ func (or *OrderRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64,
 	db := or.db.Connect()
 	var count int64
 	err := db.Model(&entities.Order{}).
-		Where("user_delivery_id = ? AND status != ?", userID, "finished").
+		Where("user_delivery_id = ? AND status != ?", userID, "delivered").
 		Count(&count).Error
 	return count, err
 }
@@ -138,6 +138,13 @@ func (or *OrderRepositoryImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.
 	var orders []*entities.Order
 	db := or.db.Connect()
 	err := db.Where("user_order_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
+	return orders, err
+}
+
+func (or *OrderRepositoryImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error) {
+	var orders []*entities.Order
+	db := or.db.Connect()
+	err := db.Where("user_delivery_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
 	return orders, err
 }
 
