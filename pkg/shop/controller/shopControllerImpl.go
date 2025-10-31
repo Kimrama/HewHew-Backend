@@ -79,6 +79,28 @@ func (s *ShopControllerImpl) EditCanteen(ctx *fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "Canteen updated successfully"})
 }
 
+func (s *ShopControllerImpl) GetCanteenByName(ctx *fiber.Ctx) error {
+	canteenName := ctx.Params("canteenName")
+	decodedName, err := url.PathUnescape(canteenName)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid canteen name",
+		})
+	}
+	canteen, err := s.ShopService.GetCanteenByName(decodedName)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"canteen_name": canteen.CanteenName,
+		"latitude":     canteen.Latitude,
+		"longitude":    canteen.Longitude,
+	})
+}
+
 func (s *ShopControllerImpl) DeleteCanteen(ctx *fiber.Ctx) error {
 	canteenName := ctx.Params("canteenName")
 	decodedName, err := url.PathUnescape(canteenName)
@@ -225,6 +247,7 @@ func (s *ShopControllerImpl) GetAllShops(ctx *fiber.Ctx) error {
 		}
 
 		response = append(response, model.GetAllShopResponse{
+			ShopID:      shop.ShopID.String(),
 			Name:        shop.Name,
 			CanteenName: shop.CanteenName,
 			Address:     shop.Address,
@@ -237,6 +260,53 @@ func (s *ShopControllerImpl) GetAllShops(ctx *fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{
 		"shops": response,
 	})
+}
+
+func (s *ShopControllerImpl) GetShopByID(ctx *fiber.Ctx) error {
+	shopID := ctx.Params("shopID")
+	shopUUID, err := uuid.Parse(shopID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid shop ID",
+		})
+	}
+
+	shopEntity, err := s.ShopService.GetShopByID(shopUUID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	var menus []model.MenuResponse
+	for _, m := range shopEntity.Menus {
+		menus = append(menus, model.MenuResponse{
+			MenuID:   m.MenuID.String(),
+			Name:     m.Name,
+			Detail:   m.Detail,
+			Price:    m.Price,
+			Status:   m.Status,
+			ImageURL: m.ImageURL,
+		})
+	}
+
+	var tags []string
+	for _, t := range shopEntity.Tags {
+		tags = append(tags, t.Topic)
+	}
+
+	response := model.GetShopByIdResponse{
+		ShopID:      shopEntity.ShopID.String(),
+		Name:        shopEntity.Name,
+		CanteenName: shopEntity.CanteenName,
+		Address:     shopEntity.Address,
+		ImageURL:    shopEntity.ImageURL,
+		State:       shopEntity.State,
+		Tags:        tags,
+		Menus:       menus,
+	}
+
+	return ctx.JSON(response)
 }
 
 func (s *ShopControllerImpl) EditShopImage(ctx *fiber.Ctx) error {

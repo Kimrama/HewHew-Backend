@@ -16,4 +16,9 @@ type OrderService interface {
 	GetOrdersByShopID(userID string) ([]*entities.Order, error)
 	GetAvailableOrders() ([]*entities.Order, error)
 	GetOrderByID(orderID uuid.UUID) (*entities.Order, error)
+	GetUserAverageRating(userID uuid.UUID) (float64, error)
+
+	CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
+	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
 }

@@ -186,3 +186,32 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order, er
 	}
 	return order, nil
 }
+
+func (os *OrderServiceImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
+	return os.OrderRepository.GetUserAverageRating(userID)
+}
+
+func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error {
+	reviewEntity := &entities.Review{
+		ReviewID:       uuid.New(),
+		UserReviewerID: userID,
+		UserTargetID:   reviewModel.UserTargetID,
+		OrderID:        reviewModel.OrderID,
+		Rating:         reviewModel.Rating,
+		Comment:        reviewModel.Comment,
+		TimeStamp:      time.Now(),
+	}
+
+	if err := os.OrderRepository.CreateReview(reviewEntity); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	return os.OrderRepository.GetReviewsByTargetUserID(userID)
+}
+
+func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
+	return os.OrderRepository.GetReviewByID(reviewID)
+}

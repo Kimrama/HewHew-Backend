@@ -24,4 +24,8 @@ type OrderRepository interface {
 	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOffLocation, error)
+
+	CreateReview(reviewEntity *entities.Review) error
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
+	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
 }

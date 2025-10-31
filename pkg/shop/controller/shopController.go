@@ -8,9 +8,11 @@ type ShopController interface {
 	DeleteCanteen(ctx *fiber.Ctx) error
 	EditShop(ctx *fiber.Ctx) error
 	GetShop(ctx *fiber.Ctx) error
+	GetShopByID(ctx *fiber.Ctx) error
 	ChangeState(ctx *fiber.Ctx) error
 	EditShopImage(ctx *fiber.Ctx) error
 	GetAllCanteens(ctx *fiber.Ctx) error
+	GetCanteenByName(ctx *fiber.Ctx) error
 	GetAllShops(ctx *fiber.Ctx) error
 	Createtag(ctx *fiber.Ctx) error
 	GetTagsByShopIDAndTopic(ctx *fiber.Ctx) error

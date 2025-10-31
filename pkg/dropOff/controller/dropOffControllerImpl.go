@@ -66,6 +66,7 @@ func (dc *DropOffControllerImpl) GetAllDropOffs(ctx *fiber.Ctx) error {
 	var dropoffs []model.DropOffDetailResponse
 	for _, entity := range dropoffEntities {
 		dropoff := model.DropOffDetailResponse{
+			DropOffID: entity.DropOffLocationID.String(),
 			Latitude:  entity.Latitude,
 			Longitude: entity.Longitude,
 			Name:      entity.Name,
