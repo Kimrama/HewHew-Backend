@@ -17,6 +17,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const OrderExpirationDuration = 30000000 * time.Minute
+
 type OrderRepositoryImpl struct {
 	db             database.Database
 	supabaseConfig *config.Supabase
@@ -120,8 +122,9 @@ func (or *OrderRepositoryImpl) DeleteOrder(orderID uuid.UUID) error {
 }
 
 func (or *OrderRepositoryImpl) GetOrdersByShopID(shopID uuid.UUID) ([]*entities.Order, error) {
-	var orders []*entities.Order
 	db := or.db.Connect()
+	var orders []*entities.Order
+
 	err := db.
 		Model(&entities.Order{}).
 		Joins("JOIN menu_quantities ON menu_quantities.order_id = orders.order_id").
@@ -130,22 +133,55 @@ func (or *OrderRepositoryImpl) GetOrdersByShopID(shopID uuid.UUID) ([]*entities.
 		Group("orders.order_id").
 		Preload("MenuQuantity").
 		Find(&orders).Error
+	if err != nil {
+		return nil, err
+	}
 
-	return orders, err
+	for _, order := range orders {
+		if order.Status == "waiting" && time.Since(order.OrderDate) > OrderExpirationDuration {
+			order.Status = "expired"
+			db.Model(&order).Update("status", "expired")
+		}
+	}
+
+	return orders, nil
 }
-
 func (or *OrderRepositoryImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error) {
-	var orders []*entities.Order
 	db := or.db.Connect()
+	var orders []*entities.Order
+
 	err := db.Where("user_order_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
-	return orders, err
+	if err != nil {
+		return nil, err
+	}
+
+	for _, order := range orders {
+		if order.Status == "waiting" && time.Since(order.OrderDate) > OrderExpirationDuration {
+			order.Status = "expired"
+			db.Model(&order).Update("status", "expired")
+		}
+	}
+
+	return orders, nil
 }
 
 func (or *OrderRepositoryImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error) {
-	var orders []*entities.Order
 	db := or.db.Connect()
+	var orders []*entities.Order
+
 	err := db.Where("user_delivery_id = ?", userID).Preload("MenuQuantity").Find(&orders).Error
-	return orders, err
+	if err != nil {
+		return nil, err
+	}
+
+	for _, order := range orders {
+		if order.Status == "waiting" && time.Since(order.OrderDate) > OrderExpirationDuration {
+			order.Status = "expired"
+			db.Model(&order).Update("status", "expired")
+		}
+	}
+
+	return orders, nil
 }
 
 func (or *OrderRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
@@ -165,11 +201,20 @@ func (or *OrderRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Sh
 func (or *OrderRepositoryImpl) GetAvailableOrders() ([]*entities.Order, error) {
 	db := or.db.Connect()
 	var orders []*entities.Order
+
 	if err := db.Preload("MenuQuantity").
 		Where("status = ?", "waiting").
 		Find(&orders).Error; err != nil {
 		return nil, err
 	}
+
+	for _, order := range orders {
+		if time.Since(order.OrderDate) > OrderExpirationDuration {
+			order.Status = "expired"
+			db.Model(&order).Update("status", "expired")
+		}
+	}
+
 	return orders, nil
 }
 
@@ -207,7 +252,16 @@ func (or *OrderRepositoryImpl) GetOrderByID(orderID uuid.UUID) (*entities.Order,
 	db := or.db.Connect()
 	var order entities.Order
 	err := db.Preload("MenuQuantity").First(&order, "order_id = ?", orderID).Error
-	return &order, err
+	if err != nil {
+		return nil, err
+	}
+
+	if order.Status == "waiting" && time.Since(order.OrderDate) > OrderExpirationDuration {
+		order.Status = "expired"
+		db.Model(&order).Update("status", "expired")
+	}
+
+	return &order, nil
 }
 
 func (or *OrderRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
