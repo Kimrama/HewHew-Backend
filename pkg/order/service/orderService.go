@@ -13,6 +13,7 @@ type OrderService interface {
 	ConfirmOrder(confirmOrderModel *model.ConfirmOrderRequest, userID uuid.UUID) error
 	DeleteOrder(orderID uuid.UUID, userID uuid.UUID) error
 	GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error)
+	GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error)
 	GetOrdersByShopID(userID string) ([]*entities.Order, error)
 	GetAvailableOrders() ([]*entities.Order, error)
 	GetOrderByID(orderID uuid.UUID) (*model.OrderResponse, error)

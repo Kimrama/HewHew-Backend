@@ -240,6 +240,30 @@ func (oc *OrderControllerImpl) GetAvailableOrders(ctx *fiber.Ctx) error {
 	return ctx.JSON(orders)
 }
 
+func (oc *OrderControllerImpl) GetOrderByDeliveryUserID(ctx *fiber.Ctx) error {
+	claims, err := utils.GetClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+	userID, err := uuid.Parse(tokenUserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+	orders, err := oc.OrderService.GetOrderByDeliveryUserID(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch orders"})
+	}
+	return ctx.JSON(orders)
+}
+
 func (oc *OrderControllerImpl) GetOrderByID(ctx *fiber.Ctx) error {
 	orderIDstr := ctx.Params("id")
 	orderID, err := uuid.Parse(orderIDstr)
