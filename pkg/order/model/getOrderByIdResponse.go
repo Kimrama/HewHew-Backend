@@ -22,6 +22,7 @@ type GetOrderByIdResponse struct {
 	AppointmentTime      time.Time              `json:"appointment_time"`
 	DropOffLocationID    uuid.UUID              `json:"drop_off_location_id"`
 	MenuQuantity         []MenuQuantityResponse `json:"menu_quantity"`
+	Amount               float64                `json:"amount"`
 	ShopName             string                 `json:"shop_name"`
 	CanteenName          string                 `json:"canteen_name"`
 	ShippingFee          float64                `json:"shipping_fee"`
