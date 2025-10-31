@@ -1,7 +1,6 @@
 package service
 
 import (
-	"hewhew-backend/entities"
 	"hewhew-backend/pkg/order/model"
 
 	"github.com/google/uuid"
@@ -20,6 +19,6 @@ type OrderService interface {
 	GetUserAverageRating(userID uuid.UUID) (float64, error)
 
 	CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error
-	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
-	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*model.GetReviewResponse, error)
+	GetReviewByID(reviewID uuid.UUID) (*model.GetReviewResponse, error)
 }

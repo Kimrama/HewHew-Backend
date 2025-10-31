@@ -385,12 +385,37 @@ func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest,
 	return nil
 }
 
-func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
-	return os.OrderRepository.GetReviewsByTargetUserID(userID)
+func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*model.GetReviewResponse, error) {
+	reviews, err := os.OrderRepository.GetReviewsByTargetUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*model.GetReviewResponse
+	for _, r := range reviews {
+		response = append(response, &model.GetReviewResponse{
+			UserTargetID: r.UserTargetID,
+			OrderID:      r.OrderID,
+			Rating:       r.Rating,
+			Comment:      r.Comment,
+		})
+	}
+
+	return response, nil
 }
 
-func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
-	return os.OrderRepository.GetReviewByID(reviewID)
+func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*model.GetReviewResponse, error) {
+	review, err := os.OrderRepository.GetReviewByID(reviewID)
+	if err != nil || review == nil {
+		return nil, err
+	}
+
+	return &model.GetReviewResponse{
+		UserTargetID: review.UserTargetID,
+		OrderID:      review.OrderID,
+		Rating:       review.Rating,
+		Comment:      review.Comment,
+	}, nil
 }
 
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
