@@ -51,10 +51,13 @@ func (or *OrderRepositoryImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRe
 func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
 	db := or.db.Connect()
 	var avg sql.NullFloat64
-	err := db.Model(&entities.Review{}).
-		Select("AVG(rating)").
-		Where("user_target_id = ?", userID).
+
+	err := db.Table("reviews").
+		Select("AVG(reviews.rating)").
+		Joins("JOIN orders ON reviews.order_id = orders.order_id").
+		Where("reviews.user_target_id = ? AND orders.user_delivery_id = ?", userID, userID).
 		Scan(&avg).Error
+
 	if err != nil {
 		return 0, err
 	}
@@ -184,4 +187,12 @@ func (or *OrderRepositoryImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.Dr
 		return nil, err
 	}
 	return &dropOff, nil
+}
+
+func (or *OrderRepositoryImpl) CreateReview(reviewEntity *entities.Review) error {
+	err := or.db.Connect().Create(reviewEntity).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -252,3 +252,71 @@ func (oc *OrderControllerImpl) GetOrderByID(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(order)
 }
+
+func (oc *OrderControllerImpl) GetUserAverageRating(ctx *fiber.Ctx) error {
+	claims, err := utils.GetClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+	userID, err := uuid.Parse(tokenUserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+	averageRating, err := oc.OrderService.GetUserAverageRating(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch average rating"})
+	}
+	return ctx.JSON(fiber.Map{"average_rating": averageRating})
+}
+
+func (oc *OrderControllerImpl) CreateReview(ctx *fiber.Ctx) error {
+	claims, err := utils.GetClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tokenUserID, ok := claims["user_id"].(string)
+	if !ok || tokenUserID == "" {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "invalid token",
+		})
+	}
+	userID, err := uuid.Parse(tokenUserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+
+	var reviewModel model.CreateReviewRequest
+	if err := ctx.BodyParser(&reviewModel); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+	err = oc.OrderService.CreateReview(&reviewModel, userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Review created successfully",
+	})
+}
+
+func (oc *OrderControllerImpl) GetReviewsByeTargetUserID(ctx *fiber.Ctx) error {
+	return nil
+}
+
+func (oc *OrderControllerImpl) GetReviewsByID(ctx *fiber.Ctx) error {
+	return nil
+}
