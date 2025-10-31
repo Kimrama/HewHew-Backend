@@ -77,6 +77,10 @@ func (s *MenuServiceImpl) GetMenusByShopID(shopID uuid.UUID) ([]*entities.Menu, 
 	return s.MenuRepository.GetMenusByShopID(shopID)
 }
 
+func (s *MenuServiceImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, error) {
+	return s.MenuRepository.GetMenuByID(menuID)
+}
+
 func (s *MenuServiceImpl) DeleteMenu(menuID uuid.UUID, admin *entities.ShopAdmin) error {
 	menu, err := s.MenuRepository.GetMenuByID(menuID)
 	if err != nil {
@@ -140,7 +144,7 @@ func (s *MenuServiceImpl) EditMenuStatus(menuID uuid.UUID, admin *entities.ShopA
 	if menu.ShopID != admin.ShopID {
 		return errors.New("unauthorized to edit this menu")
 	}
-	return s.MenuRepository.EditMenuStatus(menuID,status)
+	return s.MenuRepository.EditMenuStatus(menuID, status)
 }
 
 func (s *MenuServiceImpl) EditMenuImage(menuID uuid.UUID, admin *entities.ShopAdmin, imageModel *utils.ImageModel) error {

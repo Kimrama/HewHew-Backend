@@ -108,8 +108,16 @@ func (s *ShopServiceImpl) GetAllCanteens() ([]entities.Canteen, error) {
 	return s.ShopRepository.GetAllCanteens()
 }
 
+func (s *ShopServiceImpl) GetCanteenByName(canteenName string) (*entities.Canteen, error) {
+	return s.ShopRepository.GetCanteenByName(canteenName)
+}
+
 func (s *ShopServiceImpl) GetAllShops() ([]entities.Shop, error) {
 	return s.ShopRepository.GetAllShops()
+}
+
+func (s *ShopServiceImpl) GetShopByID(shopID uuid.UUID) (*entities.Shop, error) {
+	return s.ShopRepository.GetShopByID(shopID)
 }
 
 func (s *ShopServiceImpl) GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error) {

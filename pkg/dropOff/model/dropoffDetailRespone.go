@@ -1,6 +1,7 @@
 package model
 
 type DropOffDetailResponse struct {
+	DropOffID string `json:"dropoff_id"`
 	Latitude  string `json:"latitude"`
 	Longitude string `json:"longitude"`
 	Name      string `json:"name"`

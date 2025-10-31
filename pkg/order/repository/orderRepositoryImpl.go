@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"hewhew-backend/config"
 	"hewhew-backend/database"
@@ -49,18 +50,21 @@ func (or *OrderRepositoryImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRe
 
 func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
 	db := or.db.Connect()
-	var avg float64
-	err := db.Model(&entities.Review{}).
-		Select("AVG(rating)").
-		Where("user_target_id = ?", userID).
+	var avg sql.NullFloat64
+
+	err := db.Table("reviews").
+		Select("AVG(reviews.rating)").
+		Joins("JOIN orders ON reviews.order_id = orders.order_id").
+		Where("reviews.user_target_id = ? AND orders.user_delivery_id = ?", userID, userID).
 		Scan(&avg).Error
+
 	if err != nil {
 		return 0, err
 	}
-	if avg == 0 {
+	if !avg.Valid {
 		return 0, nil
 	}
-	return avg, nil
+	return avg.Float64, nil
 }
 
 func (or *OrderRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {
@@ -77,8 +81,8 @@ func (or *OrderRepositoryImpl) ConfirmOrder(orderID uuid.UUID, imageurl string) 
 	err := db.Model(&entities.Order{}).
 		Where("order_id = ? AND status = ?", orderID, "accepted").
 		Updates(map[string]interface{}{
-			"confirm_image_url": imageurl,
-			"status":            "delivered",
+			"confirmation_image_url": imageurl,
+			"status":                 "delivered",
 		}).Error
 	return err
 }
@@ -183,4 +187,34 @@ func (or *OrderRepositoryImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.Dr
 		return nil, err
 	}
 	return &dropOff, nil
+}
+
+func (or *OrderRepositoryImpl) CreateReview(reviewEntity *entities.Review) error {
+	err := or.db.Connect().Create(reviewEntity).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (or *OrderRepositoryImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	db := or.db.Connect()
+	var reviews []*entities.Review
+	err := db.Where("user_target_id = ?", userID).
+		Order("time_stamp DESC").
+		Find(&reviews).Error
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
+}
+
+func (or *OrderRepositoryImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
+	db := or.db.Connect()
+	var review entities.Review
+	err := db.Where("review_id = ?", reviewID).First(&review).Error
+	if err != nil {
+		return nil, err
+	}
+	return &review, nil
 }

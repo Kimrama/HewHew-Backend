@@ -6,6 +6,7 @@ type UserController interface {
 	CreateUser(ctx *fiber.Ctx) error
 	LoginUser(ctx *fiber.Ctx) error
 	GetUser(ctx *fiber.Ctx) error
+	GetUserByID(ctx *fiber.Ctx) error
 	EditUser(ctx *fiber.Ctx) error
 	EditUserProfileImage(ctx *fiber.Ctx) error
 	LoginShopAdmin(ctx *fiber.Ctx) error

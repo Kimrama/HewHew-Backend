@@ -21,6 +21,9 @@ func (s *fiberServer) initMenuRouter() {
 	menuController := _menuController.NewMenuControllerImpl(menuService, shopService)
 
 	menuGroup := s.app.Group("/v1/menu")
+
+	menuGroup.Get("/:menu_id", menuController.GetMenuByID)
+
 	menuGroup.Use(utils.JWTProtected())
 	menuGroup.Post("/", menuController.CreateMenu)
 	menuGroup.Put("/:menu_id", menuController.EditMenu)
