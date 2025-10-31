@@ -194,15 +194,80 @@ func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entit
 	return os.OrderRepository.GetOrderByDeliveryUserID(userID)
 }
 
-func (os *OrderServiceImpl) GetAvailableOrders() ([]*entities.Order, error) {
+func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderResponse, error) {
 	orders, err := os.OrderRepository.GetAvailableOrders()
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch orders: %w", err)
+		return nil, err
 	}
-	return orders, nil
+
+	responses := make([]model.GetAvailableOrderResponse, 0, len(orders))
+
+	for _, order := range orders {
+		if len(order.MenuQuantity) == 0 {
+			continue
+		}
+
+		firstMenuID := order.MenuQuantity[0].MenuID
+		menu, err := os.OrderRepository.GetMenuByID(firstMenuID)
+		if err != nil {
+			continue
+		}
+
+		shop, err := os.OrderRepository.GetShopByID(menu.ShopID)
+		if err != nil {
+			continue
+		}
+
+		canteen, err := os.OrderRepository.GetCanteenByName(shop.CanteenName)
+		if err != nil {
+			continue
+		}
+
+		dropOff, err := os.OrderRepository.GetDropOffByID(order.DropOffLocationID)
+		if err != nil {
+			continue
+		}
+
+		cLat, err1 := strconv.ParseFloat(canteen.Latitude, 64)
+		cLon, err2 := strconv.ParseFloat(canteen.Longitude, 64)
+		dLat, err3 := strconv.ParseFloat(dropOff.Latitude, 64)
+		dLon, err4 := strconv.ParseFloat(dropOff.Longitude, 64)
+		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+			continue
+		}
+
+		distance := calculateDistance(cLat, cLon, dLat, dLon)
+		shippingFee := calculateShippingFee(distance)
+
+		menuQuantityResp := make([]model.MenuQuantityResponse, 0, len(order.MenuQuantity))
+		for _, mq := range order.MenuQuantity {
+			menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
+				MenuID:   mq.MenuID,
+				Quantity: mq.Quantity,
+			})
+		}
+
+		resp := model.GetAvailableOrderResponse{
+			OrderID:           order.OrderID,
+			UserOrderID:       order.UserOrderID,
+			Status:            order.Status,
+			OrderDate:         order.OrderDate,
+			DeliveryMethod:    order.DeliveryMethod,
+			AppointmentTime:   order.AppointmentTime,
+			DropOffLocationID: order.DropOffLocationID,
+			MenuQuantity:      menuQuantityResp,
+			ShopName:          shop.Name,
+			CanteenName:       canteen.CanteenName,
+			ShippingFee:       shippingFee,
+		}
+
+		responses = append(responses, resp)
+	}
+
+	return responses, nil
 }
 
-func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.OrderResponse, error) {
+func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.GetOrderByIdResponse, error) {
 	order, err := os.OrderRepository.GetOrderByID(orderID)
 	if err != nil {
 		return nil, err
@@ -247,7 +312,7 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.OrderRespons
 		})
 	}
 
-	return &model.OrderResponse{
+	return &model.GetOrderByIdResponse{
 		OrderID:              order.OrderID,
 		UserOrderID:          order.UserOrderID,
 		UserDeliveryID:       order.UserDeliveryID,
