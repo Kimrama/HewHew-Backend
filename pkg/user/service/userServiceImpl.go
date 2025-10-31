@@ -127,6 +127,3 @@ func (s *UserServiceImpl) Topup(UserID string, amount float64) error {
 
 	return s.userRepository.Topup(TopupEntity)
 }
-
-
-
