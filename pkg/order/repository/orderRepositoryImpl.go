@@ -163,10 +163,14 @@ func (or *OrderRepositoryImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Sh
 }
 
 func (or *OrderRepositoryImpl) GetAvailableOrders() ([]*entities.Order, error) {
-	var orders []*entities.Order
 	db := or.db.Connect()
-	err := db.Where("status = ?", "waiting").Preload("MenuQuantity").Find(&orders).Error
-	return orders, err
+	var orders []*entities.Order
+	if err := db.Preload("MenuQuantity").
+		Where("status = ?", "waiting").
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
 }
 
 func (or *OrderRepositoryImpl) CreateReview(reviewEntity *entities.Review) error {
