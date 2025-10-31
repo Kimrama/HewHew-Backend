@@ -15,6 +15,7 @@ type GetOrderResponse struct {
 	DeliveryMethod  string                 `json:"delivery_method"`
 	AppointmentTime time.Time              `json:"appointment_time"`
 	MenuQuantity    []MenuQuantityResponse `json:"menu_quantity"`
+	Amount          float64                `json:"amount"`
 	ShopName        string                 `json:"shop_name"`
 	CanteenName     string                 `json:"canteen_name"`
 	ShippingFee     float64                `json:"shipping_fee"`
