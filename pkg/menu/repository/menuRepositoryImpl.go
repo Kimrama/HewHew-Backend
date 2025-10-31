@@ -83,6 +83,15 @@ func (r *MenuRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, erro
 	return &menu, nil
 }
 
+func (r *MenuRepositoryImpl) GetTagByID(tagID uuid.UUID) (*entities.Tag, error) {
+	var tag entities.Tag
+	db := r.db.Connect()
+	if err := db.First(&tag, "tag_id = ?", tagID).Error; err != nil {
+		return nil, err
+	}
+	return &tag, nil
+}
+
 func (r *MenuRepositoryImpl) DeleteMenu(menuID uuid.UUID) error {
 	db := r.db.Connect()
 	if err := db.Where("menu_id = ?", menuID).Delete(&entities.Menu{}).Error; err != nil {

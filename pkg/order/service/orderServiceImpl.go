@@ -55,6 +55,9 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 	}
 
 	for _, item := range orderModel.Menu {
+		if item.Quantity <= 0 {
+			return fmt.Errorf("invalid quantity %d for menu ID %s", item.Quantity, item.MenuID)
+		}
 		menuQuantityEntity := &entities.MenuQuantity{
 			MenuQuantityID: uuid.New(),
 			MenuID:         item.MenuID,
