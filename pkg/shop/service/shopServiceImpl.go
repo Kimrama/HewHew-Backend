@@ -7,10 +7,11 @@ import (
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/pkg/shop/repository"
 	"hewhew-backend/utils"
-	"time"
 	"math"
-	"github.com/google/uuid"
 	"strconv"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type ShopServiceImpl struct {
@@ -139,7 +140,7 @@ func (s *ShopServiceImpl) EditTag(tagID string, topic string) error {
 	return s.ShopRepository.EditTag(tagEntity)
 }
 
-func (s *ShopServiceImpl) GetAllTags(shopID string) ([]entities.Tag, error) {
+func (s *ShopServiceImpl) GetAllTags(shopID uuid.UUID) ([]entities.Tag, error) {
 	return s.ShopRepository.GetAllTags(shopID)
 }
 func (s *ShopServiceImpl) DeleteTag(tagID string) error {
@@ -260,4 +261,3 @@ func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 func calculateShippingFee(distanceKm float64) float64 {
 	return math.Round(distanceKm*10*100) / 100
 }
-

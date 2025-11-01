@@ -514,19 +514,24 @@ func (s *ShopControllerImpl) GetAllTags(ctx *fiber.Ctx) error {
 			"error": "invalid token",
 		})
 	}
+	userID, err := uuid.Parse(tokenUserID)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user_id in token"})
+	}
+
 	isAdmin, ok := claims["admin"].(bool)
 	if !ok || !isAdmin {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "unauthorized",
 		})
 	}
-	shop, err := s.ShopService.GetShopByAdminID(uuid.MustParse(tokenUserID))
+	shop, err := s.ShopService.GetShopByAdminID(userID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	tags, err := s.ShopService.GetAllTags(shop.ShopID.String())
+	tags, err := s.ShopService.GetAllTags(shop.ShopID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

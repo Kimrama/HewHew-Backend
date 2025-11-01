@@ -31,8 +31,10 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Post("/transaction_log", shopController.CreateTransactionLog)
 	shopGroup.Post("/notification", shopController.CreateNotification)
 
-	shopGroup.Post("/tags", shopController.Createtag)
-	shopGroup.Put("/tags/:tagID", shopController.Edittag)
-	shopGroup.Get("/tags", shopController.GetAllTags)
-	shopGroup.Delete("/tags/:tagID", shopController.DeleteTag)
+	tagGroup := s.app.Group("/v1/tags")
+	tagGroup.Use(utils.JWTProtected())
+	tagGroup.Post("/", shopController.Createtag)
+	tagGroup.Put("/:tagID", shopController.Edittag)
+	tagGroup.Get("/", shopController.GetAllTags)
+	tagGroup.Delete("/:tagID", shopController.DeleteTag)
 }
