@@ -70,7 +70,7 @@ func (dr *DropOffRepositoryImpl) GetAllDropOffs() ([]*entities.DropOffLocation, 
 
 func (dr *DropOffRepositoryImpl) GetDropOffByID(dropOffID uuid.UUID) (*entities.DropOffLocation, error) {
 	var dropOff entities.DropOffLocation
-	err := dr.db.Connect().Where("drop_off_id = ?", dropOffID).First(&dropOff).Error
+	err := dr.db.Connect().Where("drop_off_location_id = ?", dropOffID).First(&dropOff).Error
 	if err != nil {
 		return nil, err
 	}
