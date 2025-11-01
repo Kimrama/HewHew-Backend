@@ -93,11 +93,22 @@ func (dc *DropOffControllerImpl) GetDropOffByID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	dropOff, err := dc.DropOffService.GetDropOffByID(dropOffID)
+	dropOffEntity, err := dc.DropOffService.GetDropOffByID(dropOffID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	return ctx.Status(fiber.StatusOK).JSON(dropOff)
+
+	dropOffResp := model.GetDropOffByIDResponse{
+		DropOffID: dropOffEntity.DropOffLocationID.String(),
+		Latitude:  dropOffEntity.Latitude,
+		Longitude: dropOffEntity.Longitude,
+		Name:      dropOffEntity.Name,
+		Detail:    dropOffEntity.Detail,
+		Image:     dropOffEntity.ImageURL,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(dropOffResp)
 }
+
