@@ -17,6 +17,7 @@ type GetAvailableOrderResponse struct {
 	MenuQuantity      []MenuQuantityResponse `json:"menu_quantity"`
 	Amount            float64                `json:"amount"`
 	ShopName          string                 `json:"shop_name"`
+	ShopID            uuid.UUID              `json:"shop_id"`
 	CanteenName       string                 `json:"canteen_name"`
 	ShippingFee       float64                `json:"shipping_fee"`
 }
