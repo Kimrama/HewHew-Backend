@@ -213,7 +213,7 @@ func (oc *OrderControllerImpl) GetOrdersByUserID(ctx *fiber.Ctx) error {
 
 	orders, err := oc.OrderService.GetOrdersByUserID(userID)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch orders"})
+		return err
 	}
 	return ctx.JSON(orders)
 }
