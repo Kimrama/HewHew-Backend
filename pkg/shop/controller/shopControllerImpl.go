@@ -508,6 +508,7 @@ func (s *ShopControllerImpl) GetAllTags(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+
 	tokenUserID, ok := claims["user_id"].(string)
 	if !ok || tokenUserID == "" {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -537,7 +538,16 @@ func (s *ShopControllerImpl) GetAllTags(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	return ctx.JSON(fiber.Map{"tags": tags})
+
+	var response []model.GetAllTagsRequest
+	for _, t := range tags {
+		response = append(response, model.GetAllTagsRequest{
+			Topic: t.Topic,
+			TagID: t.TagID.String(),
+		})
+	}
+
+	return ctx.JSON(response)
 }
 
 func (s *ShopControllerImpl) DeleteTag(ctx *fiber.Ctx) error {
