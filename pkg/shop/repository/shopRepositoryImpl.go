@@ -286,3 +286,12 @@ func (r *ShopRepositoryImpl) GetMenuByID(menuID uuid.UUID) (*entities.Menu, erro
 	err := db.First(&menu, "menu_id = ?", menuID).Error
 	return &menu, err
 }
+
+func (r *ShopRepositoryImpl) GetTagByID(tagID uuid.UUID) (*entities.Tag, error) {
+	var tag entities.Tag
+	db := r.db.Connect()
+	if err := db.First(&tag, "tag_id = ?", tagID).Error; err != nil {
+		return nil, err
+	}
+	return &tag, nil
+}

@@ -26,5 +26,5 @@ type ShopService interface {
 	EditTag(tagID string, topic string) error
 	GetAllTags(shopID uuid.UUID) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
-	GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error)
+	GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDResponse, error)
 }
