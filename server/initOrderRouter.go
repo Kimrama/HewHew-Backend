@@ -30,6 +30,7 @@ func (s *fiberServer) initOrderRouter() {
 	reviewGroup.Use(utils.JWTProtected())
 	reviewGroup.Get("/averagerating", orderController.GetUserAverageRating)
 	reviewGroup.Get("/user/:targetUserID", orderController.GetReviewsByTargetUserID)
+	reviewGroup.Get("/reviewer/:reviewerUserID", orderController.GetReviewsByReviewerUserID)
 	reviewGroup.Get("/:reviewID", orderController.GetReviewByID)
 	reviewGroup.Post("/", orderController.CreateReview)
 
