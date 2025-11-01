@@ -32,4 +32,6 @@ type OrderRepository interface {
 	CreateReview(reviewEntity *entities.Review) error
 	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
 	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
+	CreateTransactionLog(log *entities.TransactionLog) error
+	CreateNotification(notification *entities.Notification) error
 }

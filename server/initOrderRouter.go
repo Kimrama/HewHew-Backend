@@ -22,6 +22,8 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Get("/:id", orderController.GetOrderByID)
 	orderGroup.Post("/accept", orderController.AcceptOrder)
 	orderGroup.Post("/confirm", orderController.ConfirmOrder)
+	orderGroup.Post("/transaction_log", orderController.CreateTransactionLog)
+	orderGroup.Post("/notification", orderController.CreateNotification)
 	// orderGroup.Delete("/delete/:id", orderController.DeleteOrder)
 
 	reviewGroup := s.app.Group("/v1/review")
