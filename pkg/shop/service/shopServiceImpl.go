@@ -148,6 +148,41 @@ func (s *ShopServiceImpl) DeleteTag(tagID string) error {
 	return nil
 }
 
-func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error) {
-	return s.ShopRepository.GetAllMenus(shopID)
+func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDResponse, error) {
+	menus, err := s.ShopRepository.GetAllMenus(shopID)
+	if err != nil {
+		return nil, err
+	}
+	var responses []*model.GetMenuByIDResponse
+	for _, m := range menus {
+		var tags []string
+		if m.Tag1ID != nil {
+			tag1, err := s.ShopRepository.GetTagByID(*m.Tag1ID)
+			if err == nil {
+				tags = append(tags, tag1.Topic)
+			}
+		}
+
+		if m.Tag2ID != nil {
+			if m.Tag1ID == nil || *m.Tag2ID != *m.Tag1ID {
+				tag2, err := s.ShopRepository.GetTagByID(*m.Tag2ID)
+				if err == nil {
+					tags = append(tags, tag2.Topic)
+				}
+			}
+		}
+		resp := &model.GetMenuByIDResponse{
+			MenuID:   m.MenuID,
+			Name:     m.Name,
+			Detail:   m.Detail,
+			Price:    m.Price,
+			Status:   m.Status,
+			ImageURL: m.ImageURL,
+		}
+
+		resp.Tags = tags
+		responses = append(responses, resp)
+	}
+
+	return responses, nil
 }

@@ -576,7 +576,6 @@ func (s *ShopControllerImpl) DeleteTag(ctx *fiber.Ctx) error {
 }
 
 func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
-
 	var req model.GetAllMenusRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
@@ -592,13 +591,12 @@ func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
 		})
 	}
 
-	Menus, err := s.ShopService.GetAllMenus(shopUUID)
+	menus, err := s.ShopService.GetAllMenus(shopUUID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	return ctx.JSON(fiber.Map{"menus": Menus})
+
+	return ctx.JSON(fiber.Map{"menus": menus})
 }
-
-
