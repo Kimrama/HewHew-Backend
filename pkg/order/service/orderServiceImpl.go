@@ -273,9 +273,14 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 
 		distance := calculateDistance(cLat, cLon, dLat, dLon)
 		shippingFee := calculateShippingFee(distance)
-
+		var amount float64
 		menuQuantityResp := make([]model.MenuQuantityResponse, 0, len(order.MenuQuantity))
 		for _, mq := range order.MenuQuantity {
+			menu, err := os.OrderRepository.GetMenuByID(mq.MenuID)
+			if err != nil {
+				return nil, err
+			}
+			amount += menu.Price * float64(mq.Quantity)
 			menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
 				MenuID:   mq.MenuID,
 				Quantity: mq.Quantity,
@@ -294,7 +299,7 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 			ShopName:          shop.Name,
 			CanteenName:       canteen.CanteenName,
 			ShippingFee:       shippingFee,
-			Amount:            order.TransactionLog.Amount,
+			Amount:            amount,
 		}
 
 		responses = append(responses, resp)
@@ -340,8 +345,14 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.GetOrderById
 	distance := calculateDistance(cLat, cLon, dLat, dLon)
 	shippingFee := calculateShippingFee(distance)
 
+	var amount float64
 	var menuQuantityResp []model.MenuQuantityResponse
 	for _, mq := range order.MenuQuantity {
+		menu, err := os.OrderRepository.GetMenuByID(mq.MenuID)
+		if err != nil {
+			return nil, err
+		}
+		amount += menu.Price * float64(mq.Quantity)
 		menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
 			MenuID:   mq.MenuID,
 			Quantity: mq.Quantity,
@@ -362,7 +373,7 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.GetOrderById
 		ShopName:             shop.Name,
 		CanteenName:          canteen.CanteenName,
 		ShippingFee:          shippingFee,
-		Amount:               order.TransactionLog.Amount,
+		Amount:               amount,
 	}, nil
 }
 
@@ -469,9 +480,15 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 
 	distance := calculateDistance(cLat, cLon, dLat, dLon)
 	shippingFee := calculateShippingFee(distance)
+	var amount float64
 
 	var menuQuantityResp []model.MenuQuantityResponse
 	for _, mq := range order.MenuQuantity {
+		menu, err := os.OrderRepository.GetMenuByID(mq.MenuID)
+		if err != nil {
+			return nil, err
+		}
+		amount += menu.Price * float64(mq.Quantity)
 		menuQuantityResp = append(menuQuantityResp, model.MenuQuantityResponse{
 			MenuID:   mq.MenuID,
 			Quantity: mq.Quantity,
@@ -491,6 +508,6 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 		ShopName:          shop.Name,
 		CanteenName:       canteen.CanteenName,
 		ShippingFee:       shippingFee,
-		Amount:            order.TransactionLog.Amount,
+		Amount:            amount,
 	}, nil
 }
