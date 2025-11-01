@@ -296,3 +296,11 @@ func (or *OrderRepositoryImpl) GetDropOffByID(id uuid.UUID) (*entities.DropOffLo
 	err := db.First(&dropOff, "drop_off_location_id = ?", id).Error
 	return &dropOff, err
 }
+
+func (or *OrderRepositoryImpl) CreateNotification(notification *entities.Notification) error {
+	return or.db.Connect().Create(notification).Error
+}
+
+func (or *OrderRepositoryImpl) CreateTransactionLog(log *entities.TransactionLog) error {
+	return or.db.Connect().Create(log).Error
+}

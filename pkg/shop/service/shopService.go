@@ -27,6 +27,4 @@ type ShopService interface {
 	GetAllTags(shopID string) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
 	GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error)
-	CreateTransactionLog(log *model.TransactionLog) error
-	CreateNotification(notification *model.CreateNotificationRequest) error
 }
