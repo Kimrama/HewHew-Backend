@@ -168,6 +168,7 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 		})
 	}
 	user := &model.UserDetailResponse{
+		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
 		FName:           userEntity.FName,
 		LName:           userEntity.LName,
@@ -192,6 +193,7 @@ func (c *UserControllerImpl) GetUserByID(ctx *fiber.Ctx) error {
 		})
 	}
 	user := &model.UserDetailResponse{
+		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
 		FName:           userEntity.FName,
 		LName:           userEntity.LName,
