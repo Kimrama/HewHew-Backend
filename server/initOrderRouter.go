@@ -13,12 +13,12 @@ func (s *fiberServer) initOrderRouter() {
 	orderController := _orderController.NewOrderControllerImpl(orderService)
 
 	orderGroup := s.app.Group("/v1/order")
+	orderGroup.Get("/available", orderController.GetAvailableOrders)
 	orderGroup.Use(utils.JWTProtected())
 	orderGroup.Post("/", orderController.CreateOrder)
 	orderGroup.Get("/", orderController.GetOrdersByUserID)
 	orderGroup.Get("/delivery", orderController.GetOrderByDeliveryUserID)
 	orderGroup.Get("/shop", orderController.GetOrdersByShopID)
-	orderGroup.Get("/available", orderController.GetAvailableOrders)
 	orderGroup.Get("/:id", orderController.GetOrderByID)
 	orderGroup.Post("/accept", orderController.AcceptOrder)
 	orderGroup.Post("/confirm", orderController.ConfirmOrder)

@@ -297,6 +297,7 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 			DropOffLocationID: order.DropOffLocationID,
 			MenuQuantity:      menuQuantityResp,
 			ShopName:          shop.Name,
+			ShopID:            shop.ShopID,
 			CanteenName:       canteen.CanteenName,
 			ShippingFee:       shippingFee,
 			Amount:            amount,
