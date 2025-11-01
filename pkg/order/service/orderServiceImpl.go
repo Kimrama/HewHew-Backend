@@ -245,6 +245,10 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 		return nil, err
 	}
 
+	if len(orders) == 0 {
+		return []model.GetAvailableOrderResponse{}, nil
+	}
+
 	responses := make([]model.GetAvailableOrderResponse, 0, len(orders))
 
 	for _, order := range orders {
@@ -314,6 +318,9 @@ func (os *OrderServiceImpl) GetAvailableOrders() ([]model.GetAvailableOrderRespo
 		}
 
 		responses = append(responses, resp)
+	}
+	if len(responses) == 0 {
+		return []model.GetAvailableOrderResponse{}, nil
 	}
 
 	return responses, nil
