@@ -174,12 +174,17 @@ func (os *OrderServiceImpl) GetOrdersByUserID(userID uuid.UUID) ([]model.GetOrde
 	if err != nil {
 		return nil, err
 	}
-
+	if len(orders) == 0 {
+		return []model.GetOrderResponse{}, nil
+	}
 	var responses []model.GetOrderResponse
 	for _, order := range orders {
 		resp, err := os.buildOrderResponse(order)
 		if err != nil {
 			return nil, err
+		}
+		if resp == nil {
+			continue
 		}
 		responses = append(responses, *resp)
 	}
@@ -217,12 +222,17 @@ func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]model.
 	if err != nil {
 		return nil, err
 	}
-
+	if len(orders) == 0 {
+		return []model.GetOrderResponse{}, nil
+	}
 	var responses []model.GetOrderResponse
 	for _, order := range orders {
 		resp, err := os.buildOrderResponse(order)
 		if err != nil {
 			return nil, err
+		}
+		if resp == nil {
+			continue
 		}
 		responses = append(responses, *resp)
 	}
