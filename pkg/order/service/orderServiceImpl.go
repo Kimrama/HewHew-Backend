@@ -407,13 +407,37 @@ func (os *OrderServiceImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*model
 	var response []*model.GetReviewResponse
 	for _, r := range reviews {
 		response = append(response, &model.GetReviewResponse{
-			UserTargetID: r.UserTargetID,
-			OrderID:      r.OrderID,
-			Rating:       r.Rating,
-			Comment:      r.Comment,
+			ReviewID:       r.ReviewID,
+			UserReviewerID: r.UserReviewerID,
+			UserTargetID:   r.UserTargetID,
+			OrderID:        r.OrderID,
+			Rating:         r.Rating,
+			Comment:        r.Comment,
+			TimeStamp:      r.TimeStamp,
 		})
 	}
 
+	return response, nil
+}
+
+func (os *OrderServiceImpl) GetReviewsByReviewerUserID(userID uuid.UUID) ([]*model.GetReviewResponse, error) {
+	reviews, err := os.OrderRepository.GetReviewsByReviewerUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*model.GetReviewResponse
+	for _, r := range reviews {
+		response = append(response, &model.GetReviewResponse{
+			ReviewID:       r.ReviewID,
+			UserReviewerID: r.UserReviewerID,
+			UserTargetID:   r.UserTargetID,
+			OrderID:        r.OrderID,
+			Rating:         r.Rating,
+			Comment:        r.Comment,
+			TimeStamp:      r.TimeStamp,
+		})
+	}
 	return response, nil
 }
 
@@ -424,10 +448,13 @@ func (os *OrderServiceImpl) GetReviewByID(reviewID uuid.UUID) (*model.GetReviewR
 	}
 
 	return &model.GetReviewResponse{
-		UserTargetID: review.UserTargetID,
-		OrderID:      review.OrderID,
-		Rating:       review.Rating,
-		Comment:      review.Comment,
+		ReviewID:       review.ReviewID,
+		UserReviewerID: review.UserReviewerID,
+		UserTargetID:   review.UserTargetID,
+		OrderID:        review.OrderID,
+		Rating:         review.Rating,
+		Comment:        review.Comment,
+		TimeStamp:      review.TimeStamp,
 	}, nil
 }
 
@@ -601,4 +628,3 @@ func (oc *OrderServiceImpl) CreateNotification(notification *model.CreateNotific
 
 	return oc.OrderRepository.CreateNotification(notificationEntity)
 }
-

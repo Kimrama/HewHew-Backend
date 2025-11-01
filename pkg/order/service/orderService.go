@@ -20,6 +20,7 @@ type OrderService interface {
 
 	CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error
 	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*model.GetReviewResponse, error)
+	GetReviewsByReviewerUserID(reviewerUserID uuid.UUID) ([]*model.GetReviewResponse, error)
 	GetReviewByID(reviewID uuid.UUID) (*model.GetReviewResponse, error)
 	CreateTransactionLog(log *model.TransactionLog) error
 	CreateNotification(notification *model.CreateNotificationRequest) error
