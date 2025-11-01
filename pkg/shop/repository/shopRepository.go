@@ -32,4 +32,5 @@ type ShopRepository interface {
 	GetDropOffByID(id uuid.UUID) (*entities.DropOffLocation, error)
 	GetOrderByID(orderID uuid.UUID) (*entities.Order, error)
 	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
+	GetTagByID(tagID uuid.UUID) (*entities.Tag, error)
 }
