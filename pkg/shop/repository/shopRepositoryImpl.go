@@ -244,7 +244,7 @@ func (r *ShopRepositoryImpl) EditTag(tagModel *entities.Tag) error {
 	return err
 }
 
-func (r *ShopRepositoryImpl) GetAllTags(shopID string) ([]entities.Tag, error) {
+func (r *ShopRepositoryImpl) GetAllTags(shopID uuid.UUID) ([]entities.Tag, error) {
 	var tags []entities.Tag
 	db := r.db.Connect()
 	if err := db.Where("shop_id = ?", shopID).Find(&tags).Error; err != nil {

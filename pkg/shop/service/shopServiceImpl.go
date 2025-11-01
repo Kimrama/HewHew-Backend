@@ -7,6 +7,7 @@ import (
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/pkg/shop/repository"
 	"hewhew-backend/utils"
+
 	"github.com/google/uuid"
 )
 
@@ -136,7 +137,7 @@ func (s *ShopServiceImpl) EditTag(tagID string, topic string) error {
 	return s.ShopRepository.EditTag(tagEntity)
 }
 
-func (s *ShopServiceImpl) GetAllTags(shopID string) ([]entities.Tag, error) {
+func (s *ShopServiceImpl) GetAllTags(shopID uuid.UUID) ([]entities.Tag, error) {
 	return s.ShopRepository.GetAllTags(shopID)
 }
 func (s *ShopServiceImpl) DeleteTag(tagID string) error {
