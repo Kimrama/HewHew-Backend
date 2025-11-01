@@ -355,6 +355,19 @@ func (oc *OrderControllerImpl) GetReviewsByTargetUserID(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(reviews)
 }
 
+func (oc *OrderControllerImpl) GetReviewsByReviewerUserID(ctx *fiber.Ctx) error {
+	userIDStr := ctx.Params("reviewerUserID")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+	reviews, err := oc.OrderService.GetReviewsByReviewerUserID(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(reviews)
+}
+
 func (oc *OrderControllerImpl) GetReviewByID(ctx *fiber.Ctx) error {
 	reviewIDStr := ctx.Params("reviewID")
 	reviewID, err := uuid.Parse(reviewIDStr)

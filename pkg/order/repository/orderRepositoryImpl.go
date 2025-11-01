@@ -242,6 +242,18 @@ func (or *OrderRepositoryImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*en
 	return reviews, nil
 }
 
+func (or *OrderRepositoryImpl) GetReviewsByReviewerUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	db := or.db.Connect()
+	var reviews []*entities.Review
+	err := db.Where("user_reviewer_id = ?", userID).
+		Order("time_stamp DESC").
+		Find(&reviews).Error
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
+}
+
 func (or *OrderRepositoryImpl) GetReviewByID(reviewID uuid.UUID) (*entities.Review, error) {
 	db := or.db.Connect()
 	var review entities.Review
