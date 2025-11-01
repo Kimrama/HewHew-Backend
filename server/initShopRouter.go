@@ -28,8 +28,6 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Get("/", shopController.GetShop)
 	shopGroup.Patch("/toggle_open_state", shopController.ChangeState)
 	shopGroup.Put("/shopimage", shopController.EditShopImage)
-	shopGroup.Post("/transaction_log", shopController.CreateTransactionLog)
-	shopGroup.Post("/notification", shopController.CreateNotification)
 
 	tagGroup := s.app.Group("/v1/tags")
 	tagGroup.Use(utils.JWTProtected())
