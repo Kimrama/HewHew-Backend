@@ -24,7 +24,7 @@ type ShopRepository interface {
 	CreateTag(tagModel *entities.Tag) (*entities.Tag, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagModel *entities.Tag) error
-	GetAllTags(shopID string) ([]entities.Tag, error)
+	GetAllTags(shopID uuid.UUID) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
 	GetAllMenus(shopID uuid.UUID) ([]*entities.Menu, error)
 	CreateTransactionLog(log *entities.TransactionLog) error
