@@ -19,4 +19,6 @@ type OrderController interface {
 	CreateReview(ctx *fiber.Ctx) error
 	GetReviewsByTargetUserID(ctx *fiber.Ctx) error
 	GetReviewByID(ctx *fiber.Ctx) error
+	CreateTransactionLog(ctx *fiber.Ctx) error
+	CreateNotification(ctx *fiber.Ctx) error
 }

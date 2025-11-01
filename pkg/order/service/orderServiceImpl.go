@@ -511,3 +511,94 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 		Amount:            amount,
 	}, nil
 }
+
+func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) error {
+	targetUserUUID, err := uuid.Parse(log.TargetUserID)
+	if err != nil {
+		return fmt.Errorf("invalid TargetUserID: %v", err)
+	}
+	orderUUID, err := uuid.Parse(log.OrderID)
+	if err != nil {
+		return fmt.Errorf("invalid OrderID: %v", err)
+	}
+
+	order, err := oc.OrderRepository.GetOrderByID(orderUUID)
+	if err != nil {
+		return err
+	}
+	if order == nil || len(order.MenuQuantity) == 0 {
+		return errors.New("order not found or has no menu items")
+	}
+
+	firstMenu, err := oc.OrderRepository.GetMenuByID(order.MenuQuantity[0].MenuID)
+	if err != nil {
+		return err
+	}
+
+	var totalMenuPrice float64
+	for _, mq := range order.MenuQuantity {
+		menu, err := oc.OrderRepository.GetMenuByID(mq.MenuID)
+		if err != nil {
+			return fmt.Errorf("failed to get menu %v: %w", mq.MenuID, err)
+		}
+		totalMenuPrice += menu.Price * float64(mq.Quantity)
+	}
+
+	shop, err := oc.OrderRepository.GetShopByID(firstMenu.ShopID)
+	if err != nil {
+		return err
+	}
+
+	canteen, err := oc.OrderRepository.GetCanteenByName(shop.CanteenName)
+	if err != nil {
+		return err
+	}
+
+	dropOff, err := oc.OrderRepository.GetDropOffByID(order.DropOffLocationID)
+	if err != nil {
+		return err
+	}
+
+	cLat, _ := strconv.ParseFloat(canteen.Latitude, 64)
+	cLon, _ := strconv.ParseFloat(canteen.Longitude, 64)
+	dLat, _ := strconv.ParseFloat(dropOff.Latitude, 64)
+	dLon, _ := strconv.ParseFloat(dropOff.Longitude, 64)
+
+	distance := calculateDistance(cLat, cLon, dLat, dLon)
+	shippingFee := calculateShippingFee(distance)
+	totalAmount := totalMenuPrice + shippingFee
+
+	entitiesLog := &entities.TransactionLog{
+		TransactionLogID: uuid.New(),
+		TargetUserID:     targetUserUUID,
+		OrderID:          orderUUID,
+		Detail:           log.Detail,
+		Amount:           totalAmount,
+		TimeStamp:        time.Now(),
+	}
+	return oc.OrderRepository.CreateTransactionLog(entitiesLog)
+}
+
+func (oc *OrderServiceImpl) CreateNotification(notification *model.CreateNotificationRequest) error {
+	receiverUUID, err := uuid.Parse(notification.ReceiverID)
+	if err != nil {
+		return fmt.Errorf("invalid ReceiverID: %v", err)
+	}
+
+	orderUUID, err := uuid.Parse(notification.OrderID)
+	if err != nil {
+		return fmt.Errorf("invalid OrderID: %v", err)
+	}
+
+	notificationEntity := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        orderUUID,
+		ReceiverID:     receiverUUID,
+		Topic:          notification.Topic,
+		Message:        notification.Message,
+		TimeStamp:      time.Now(),
+	}
+
+	return oc.OrderRepository.CreateNotification(notificationEntity)
+}
+
