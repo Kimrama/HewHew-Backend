@@ -253,8 +253,47 @@ func (s *ShopServiceImpl) GetPopularShops() (fiber.Map, error) {
 		return nil, err
 	}
 
+	var shopModels []model.ShopPopularResponse
+	for _, shop := range shops {
+		// convert []entities.Tag to []string of tag topics
+		var tagTopics []string
+		if len(shop.Tags) > 0 {
+			tagTopics = make([]string, 0, len(shop.Tags))
+			for _, t := range shop.Tags {
+				tagTopics = append(tagTopics, t.Topic)
+			}
+		}
+
+		// convert []entities.Menu to []model.MenuResponse
+		var menuResponses []model.MenuResponse
+		if len(shop.Menus) > 0 {
+			menuResponses = make([]model.MenuResponse, 0, len(shop.Menus))
+			for _, m := range shop.Menus {
+				menuResponses = append(menuResponses, model.MenuResponse{
+					MenuID:   m.MenuID.String(),
+					Name:     m.Name,
+					Detail:   m.Detail,
+					Price:    m.Price,
+					Status:   m.Status,
+					ImageURL: m.ImageURL,
+				})
+			}
+		}
+
+		shopModels = append(shopModels, model.ShopPopularResponse{
+			ShopID:      shop.ShopID.String(),
+			Name:        shop.Name,
+			CanteenName: shop.CanteenName,
+			Address:     shop.Address,
+			ImageURL:    shop.ImageURL,
+			State:       shop.State,
+			Tags:        tagTopics,
+			Menus:       menuResponses,
+		})
+	}
+
 	return fiber.Map{
-		"shops": shops,
+		"shops": shopModels,
 	}, nil
 
 }

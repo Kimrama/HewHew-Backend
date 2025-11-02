@@ -443,3 +443,32 @@ func (oc *OrderControllerImpl) CreateNotification(ctx *fiber.Ctx) error {
 		"message": "Notification created successfully",
 	})
 }
+
+func (oc *OrderControllerImpl) GetNotificationByUserID(ctx *fiber.Ctx) error {
+    var req model.GetNotification
+    if err := ctx.BodyParser(&req); err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "invalid request body",
+        })
+    }
+
+    if req.ReceiverID == "" {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "receiver_id is required",
+        })
+    }
+
+    userID, err := uuid.Parse(req.ReceiverID)
+    if err != nil {
+        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "invalid user ID",
+        })
+    }
+
+    notifications, err := oc.OrderService.GetNotificationByUserID(userID)
+    if err != nil {
+        return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return ctx.Status(fiber.StatusOK).JSON(notifications)
+}
