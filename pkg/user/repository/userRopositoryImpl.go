@@ -39,6 +39,24 @@ func (r *UserRepositoryImpl) CreateShop(shopEntity *entities.Shop) error {
 	return r.db.Connect().Create(shopEntity).Error
 }
 
+func (r *UserRepositoryImpl) CreateContact(contact *entities.Contact) error {
+	return r.db.Connect().Create(contact).Error
+}
+
+func (r *UserRepositoryImpl) GetContactByID(contactID uuid.UUID) (*entities.Contact, error) {
+	db := r.db.Connect()
+	var contact entities.Contact
+	if err := db.Where("contact_id = ?", contactID).First(&contact).Error; err != nil {
+		return nil, err
+	}
+	return &contact, nil
+}
+
+func (r *UserRepositoryImpl) DeleteContact(contactID uuid.UUID) error {
+	db := r.db.Connect()
+	return db.Where("contact_id = ?", contactID).Delete(&entities.Contact{}).Error
+}
+
 func (r *UserRepositoryImpl) UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error) {
 	customName := username + "_" + fmt.Sprintf("%d", time.Now().Unix())
 

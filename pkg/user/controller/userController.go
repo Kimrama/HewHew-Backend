@@ -9,6 +9,8 @@ type UserController interface {
 	GetUserByID(ctx *fiber.Ctx) error
 	EditUser(ctx *fiber.Ctx) error
 	EditUserProfileImage(ctx *fiber.Ctx) error
+	CreateUserContact(ctx *fiber.Ctx) error
+	DeleteUserContact(ctx *fiber.Ctx) error
 	LoginShopAdmin(ctx *fiber.Ctx) error
 	CreateAdmin(ctx *fiber.Ctx) error
 	Topup(ctx *fiber.Ctx) error
