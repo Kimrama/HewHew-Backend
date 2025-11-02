@@ -186,3 +186,23 @@ func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDRes
 
 	return responses, nil
 }
+
+func (s *ShopServiceImpl) GetPopularShops() ([]*entities.Shop, error) {
+	orderIDs, err := s.ShopRepository.GetOrderIDsFromTransactionLog()
+	if err != nil {
+		return nil, err
+	}
+
+	menuCounts, err := s.ShopRepository.CountMenusFromOrders(orderIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	shops, err := s.ShopRepository.GetPopularShopsByMenuCounts(menuCounts)
+	if err != nil {
+		return nil, err
+	}
+
+	return shops, nil
+
+}

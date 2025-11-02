@@ -9,6 +9,8 @@ import (
 	"hewhew-backend/utils"
 	"strconv"
 	"strings"
+	"sort"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -187,3 +189,32 @@ func (s *MenuServiceImpl) EditMenuImage(menuID uuid.UUID, admin *entities.ShopAd
 	}
 	return nil
 }
+
+
+
+func (s *MenuServiceImpl) GetPopularMenus() (fiber.Map, error) {
+	orderIDs, err := s.MenuRepository.GetOrderIDsFromTransactionLog()
+	if err != nil {
+		return nil, err
+	}
+
+	menuCounts, err := s.MenuRepository.CountMenusFromOrders(orderIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	menus, err := s.MenuRepository.GetMenusByIDs(menuCounts)
+	if err != nil {
+		return nil, err
+	}
+
+	sort.SliceStable(menus, func(i, j int) bool {
+		return menuCounts[menus[i].MenuID] > menuCounts[menus[j].MenuID]
+	})
+
+	return fiber.Map{
+		"menus":      menus,
+	}, nil
+}
+
+

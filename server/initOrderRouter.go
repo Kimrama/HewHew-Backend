@@ -14,6 +14,7 @@ func (s *fiberServer) initOrderRouter() {
 
 	orderGroup := s.app.Group("/v1/order")
 	orderGroup.Get("/available", orderController.GetAvailableOrders)
+	orderGroup.Post("/transaction_log", orderController.CreateTransactionLog)
 	orderGroup.Use(utils.JWTProtected())
 	orderGroup.Post("/", orderController.CreateOrder)
 	orderGroup.Get("/", orderController.GetOrdersByUserID)
@@ -22,7 +23,6 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Get("/:id", orderController.GetOrderByID)
 	orderGroup.Post("/accept", orderController.AcceptOrder)
 	orderGroup.Post("/confirm", orderController.ConfirmOrder)
-	orderGroup.Post("/transaction_log", orderController.CreateTransactionLog)
 	// orderGroup.Delete("/delete/:id", orderController.DeleteOrder)
 
 	reviewGroup := s.app.Group("/v1/review")

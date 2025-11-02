@@ -301,3 +301,11 @@ func (c *MenuControllerImpl) EditMenuImage(ctx *fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "Menu image updated successfully"})
 
 }
+
+func (c *MenuControllerImpl) PopularMenus(ctx *fiber.Ctx) error {
+	menus, err := c.MenuService.GetPopularMenus()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(menus)
+}

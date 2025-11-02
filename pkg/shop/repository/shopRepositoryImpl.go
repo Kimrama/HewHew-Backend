@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ShopRepositoryImpl struct {
@@ -294,4 +295,68 @@ func (r *ShopRepositoryImpl) GetTagByID(tagID uuid.UUID) (*entities.Tag, error) 
 		return nil, err
 	}
 	return &tag, nil
+}
+
+func (r *ShopRepositoryImpl) GetOrderIDsFromTransactionLog() ([]uuid.UUID, error) {
+	db := r.db.Connect()
+	var orderIDs []uuid.UUID
+
+	if err := db.Model(&entities.TransactionLog{}).
+		Pluck("DISTINCT order_id", &orderIDs).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch order IDs from transaction logs: %v", err)
+	}
+
+	return orderIDs, nil
+}
+
+func (r *ShopRepositoryImpl) CountMenusFromOrders(orderIDs []uuid.UUID) (map[uuid.UUID]int, error) {
+	if len(orderIDs) == 0 {
+		return map[uuid.UUID]int{}, nil
+	}
+
+	db := r.db.Connect()
+	type Result struct {
+		MenuID   uuid.UUID
+		TotalQty int
+	}
+	var results []Result
+
+	if err := db.Table("menu_quantities").
+		Select("menu_id, SUM(quantity) as total_qty").
+		Where("order_id IN ?", orderIDs).
+		Group("menu_id").
+		Order("total_qty DESC").
+		Scan(&results).Error; err != nil {
+		return nil, fmt.Errorf("failed to count popular menus: %v", err)
+	}
+
+	menuCounts := make(map[uuid.UUID]int)
+	for _, res := range results {
+		menuCounts[res.MenuID] = res.TotalQty
+	}
+
+	return menuCounts, nil
+}
+func (r *ShopRepositoryImpl) GetPopularShopsByMenuCounts(menuCounts map[uuid.UUID]int) ([]*entities.Shop, error) {
+	if len(menuCounts) == 0 {
+		return []*entities.Shop{}, nil
+	}
+
+	db := r.db.Connect()
+	var shops []*entities.Shop
+	menuIDs := make([]uuid.UUID, 0, len(menuCounts))
+	for id := range menuCounts {
+		menuIDs = append(menuIDs, id)
+	}
+
+	err := db.Joins("JOIN menus ON menus.shop_id = shops.shop_id").
+		Where("menus.menu_id IN ?", menuIDs).
+		Group("shops.shop_id").
+		Order(gorm.Expr("SUM(CASE WHEN menus.menu_id IN ? THEN menus.price ELSE 0 END) DESC", menuIDs)).
+		Find(&shops).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch popular shops: %v", err)
+	}
+
+	return shops, nil
 }

@@ -23,6 +23,7 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup.Get("/menus", shopController.GetAllMenus)
 	shopGroup.Get("/shops", shopController.GetAllShops)
 	shopGroup.Get("/:shopID", shopController.GetShopByID)
+	shopGroup.Get("/shop/poppular", shopController.PopularShops)
 	shopGroup.Use(utils.JWTProtected())
 	shopGroup.Put("/", shopController.EditShop)
 	shopGroup.Get("/", shopController.GetShop)
