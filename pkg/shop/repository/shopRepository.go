@@ -36,5 +36,5 @@ type ShopRepository interface {
 	GetTagByID(tagID uuid.UUID) (*entities.Tag, error)
 	GetOrderIDsFromTransactionLog() ([]uuid.UUID, error)
 	CountMenusFromOrders(orderIDs []uuid.UUID) (map[uuid.UUID]int, error)
-	GetPopularShopsByMenuCounts(menuCounts map[uuid.UUID]int) ([]*entities.Shop, error)
+	GetPopularShopsByOrderIDs(orderIDs []uuid.UUID) ([]*entities.Shop, error)
 }

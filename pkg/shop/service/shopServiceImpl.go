@@ -9,7 +9,7 @@ import (
 	"hewhew-backend/utils"
 	"math"
 	"strconv"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -234,23 +234,27 @@ func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDRes
 	return responses, nil
 }
 
-func (s *ShopServiceImpl) GetPopularShops() ([]*entities.Shop, error) {
+func (s *ShopServiceImpl) GetPopularShops() (fiber.Map, error) {
 	orderIDs, err := s.ShopRepository.GetOrderIDsFromTransactionLog()
 	if err != nil {
 		return nil, err
 	}
 
-	menuCounts, err := s.ShopRepository.CountMenusFromOrders(orderIDs)
+	menus, err := s.ShopRepository.CountMenusFromOrders(orderIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	shops, err := s.ShopRepository.GetPopularShopsByMenuCounts(menuCounts)
+	shops, err := s.ShopRepository.GetPopularShopsByOrderIDs(orderIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	return shops, nil
+	return fiber.Map{
+		"order_ids": orderIDs,
+		"menus":     menus,
+		"shops":     shops,
+	}, nil
 
 }
 func distanceKm(lat1, lon1, lat2, lon2 float64) float64 {
