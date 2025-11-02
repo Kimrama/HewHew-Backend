@@ -10,4 +10,5 @@ type UserDetailResponse struct {
 	Gender          string    `json:"gender"`
 	ProfileImageURL string    `json:"profile_image_url"`
 	Wallet          string    `json:"wallet"`
+	AvailableOrder  string    `json:"available_order"`
 }
