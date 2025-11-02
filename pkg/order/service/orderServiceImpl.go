@@ -789,10 +789,6 @@ func (oc *OrderServiceImpl) UpdateWalletBalance(userID uuid.UUID, newBalance flo
 }
 
 func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) error {
-	targetUserUUID, err := uuid.Parse(log.TargetUserID)
-	if err != nil {
-		return fmt.Errorf("invalid TargetUserID: %v", err)
-	}
 	orderUUID, err := uuid.Parse(log.OrderID)
 	if err != nil {
 		return fmt.Errorf("invalid OrderID: %v", err)
@@ -844,20 +840,21 @@ func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) erro
 	shippingFee := calculateShippingFee(distance)
 	totalAmount := totalMenuPrice + shippingFee
 
-	user, err := oc.OrderRepository.GetUserByID(targetUserUUID)
+	user, err := oc.OrderRepository.GetUserByID(order.UserOrderID)
 	if err != nil {
 		return fmt.Errorf("failed to get user wallet: %v", err)
 	}
 
 	newBalance := user.Wallet - totalAmount
-	err = oc.OrderRepository.UpdateWalletBalance(targetUserUUID, newBalance)
+	err = oc.OrderRepository.UpdateWalletBalance(order.UserOrderID, newBalance)
 	if err != nil {
 		return fmt.Errorf("failed to update wallet balance: %v", err)
 	}
 
+
 	entitiesLog := &entities.TransactionLog{
 		TransactionLogID: uuid.New(),
-		TargetUserID:     targetUserUUID,
+		TargetUserID:     order.UserOrderID,
 		OrderID:          orderUUID,
 		Detail:           "Payment for order",
 		Amount:           totalAmount,
