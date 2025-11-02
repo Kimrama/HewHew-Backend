@@ -22,6 +22,7 @@ func (s *fiberServer) initShopRouter() {
 	shopGroup := s.app.Group("/v1/shop")
 	shopGroup.Get("/menus", shopController.GetAllMenus)
 	shopGroup.Get("/shops", shopController.GetAllShops)
+	shopGroup.Get("/nearby", shopController.GetNearbyShops)
 	shopGroup.Get("/:shopID", shopController.GetShopByID)
 	shopGroup.Get("/shop/poppular", shopController.PopularShops)
 	shopGroup.Use(utils.JWTProtected())

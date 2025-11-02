@@ -22,6 +22,7 @@ type ShopService interface {
 	GetCanteenByName(canteenName string) (*entities.Canteen, error)
 	GetAllShops() ([]entities.Shop, error)
 	GetShopByID(shopID uuid.UUID) (*entities.Shop, error)
+	GetNearbyShops(lat, lon float64) ([]model.GetNearByShopResponse, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagID string, topic string) error
 	GetAllTags(shopID uuid.UUID) ([]entities.Tag, error)
