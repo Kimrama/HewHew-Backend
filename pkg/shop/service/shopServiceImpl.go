@@ -240,19 +240,12 @@ func (s *ShopServiceImpl) GetPopularShops() (fiber.Map, error) {
 		return nil, err
 	}
 
-	menus, err := s.ShopRepository.CountMenusFromOrders(orderIDs)
-	if err != nil {
-		return nil, err
-	}
-
 	shops, err := s.ShopRepository.GetPopularShopsByOrderIDs(orderIDs)
 	if err != nil {
 		return nil, err
 	}
 
 	return fiber.Map{
-		"order_ids": orderIDs,
-		"menus":     menus,
 		"shops":     shops,
 	}, nil
 
