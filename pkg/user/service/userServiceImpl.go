@@ -169,3 +169,11 @@ func (s *UserServiceImpl) Topup(UserID string, amount float64) error {
 
 	return s.userRepository.Topup(TopupEntity)
 }
+
+func (s *UserServiceImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {
+	return s.userRepository.CountActiveOrdersByUser(userID)
+}
+
+func (s *UserServiceImpl) GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error) {
+	return s.userRepository.GetReviewsByTargetUserID(targetUserID)
+}

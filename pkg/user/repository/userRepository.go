@@ -23,4 +23,7 @@ type UserRepository interface {
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	Topup(topupModel *entities.TopUp) error
 	GetAllShops() ([]entities.Shop, error)
+
+	CountActiveOrdersByUser(userID uuid.UUID) (int64, error)
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
 }

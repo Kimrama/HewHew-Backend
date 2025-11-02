@@ -21,4 +21,7 @@ type UserService interface {
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	Topup(UserID string, amount float64) error
 	GetAllShops() ([]entities.Shop, error)
+
+	CountActiveOrdersByUser(userID uuid.UUID) (int64, error)
+	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
 }

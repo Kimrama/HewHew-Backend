@@ -211,3 +211,24 @@ func (r *UserRepositoryImpl) Topup(topupModel *entities.TopUp) error {
 
 	return nil
 }
+
+func (r *UserRepositoryImpl) GetReviewsByTargetUserID(userID uuid.UUID) ([]*entities.Review, error) {
+	db := r.db.Connect()
+	var reviews []*entities.Review
+	err := db.Where("user_target_id = ?", userID).
+		Order("time_stamp DESC").
+		Find(&reviews).Error
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
+}
+
+func (r *UserRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {
+	db := r.db.Connect()
+	var count int64
+	err := db.Model(&entities.Order{}).
+		Where("user_delivery_id = ? AND status != ?", userID, "delivered").
+		Count(&count).Error
+	return count, err
+}
