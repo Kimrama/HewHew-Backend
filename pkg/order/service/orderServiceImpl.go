@@ -125,6 +125,20 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 	if err := os.OrderRepository.AcceptOrder(acceptOrderModel); err != nil {
 		return err
 	}
+	
+	notification := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        order.OrderID,
+		ReceiverID:     order.UserOrderID,
+		Topic:          "Order Accepted",
+		Message:        fmt.Sprintf("Your order %s has been accepted by the delivery user.", order.OrderID),
+		TimeStamp:      time.Now(),
+	}
+
+	if err := os.OrderRepository.CreateNotification(notification); err != nil {
+		return fmt.Errorf("failed to create notification: %v", err)
+	}
+
 	return nil
 }
 
@@ -152,6 +166,20 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 	if err := os.OrderRepository.ConfirmOrder(confirmOrderModel.OrderID, imageUrl); err != nil {
 		return err
 	}
+
+	notification := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        order.OrderID,
+		ReceiverID:     order.UserOrderID,
+		Topic:          "Order Confirmed",
+		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		TimeStamp:      time.Now(),
+	}
+
+	if err := os.OrderRepository.CreateNotification(notification); err != nil {
+		return fmt.Errorf("failed to create notification: %v", err)
+	}
+
 	return nil
 
 }
