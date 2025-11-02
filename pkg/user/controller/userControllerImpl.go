@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
@@ -348,17 +347,23 @@ func (c *UserControllerImpl) EditUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-	u := &entities.User{
-		UserID: userUUID,
-		FName:  body.FName,
-		LName:  body.LName,
-		Gender: body.Gender,
+	existingUser, err := c.userService.GetUserByUserID(userUUID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	if err := c.userService.EditUser(userUUID, u); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+	if body.FName != nil {
+		existingUser.FName = *body.FName
+	}
+	if body.LName != nil {
+		existingUser.LName = *body.LName
+	}
+	if body.Gender != nil {
+		existingUser.Gender = *body.Gender
+	}
+
+	if err := c.userService.EditUser(userUUID, existingUser); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	return ctx.JSON(fiber.Map{"message": "User updated successfully"})
