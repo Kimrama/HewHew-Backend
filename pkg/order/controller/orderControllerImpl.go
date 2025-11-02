@@ -84,6 +84,7 @@ func (oc *OrderControllerImpl) AcceptOrder(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Order accepted successfully",
 	})
