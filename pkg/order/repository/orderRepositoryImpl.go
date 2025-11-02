@@ -145,13 +145,17 @@ func (or *OrderRepositoryImpl) GetOrdersByCanteens(canteens []string) ([]entitie
 		Where("orders.status = ?", "waiting").
 		Order(orderClause).
 		Preload("MenuQuantity").
-		Preload("TransactionLog").
-		Preload("Notifications").
-		Preload("Chats").
 		Find(&orders).Error
 
 	if err != nil {
 		return nil, err
+	}
+
+	for _, order := range orders {
+		if order.Status == "waiting" && time.Since(order.OrderDate) > OrderExpirationDuration {
+			order.Status = "expired"
+			db.Model(&order).Update("status", "expired")
+		}
 	}
 
 	return orders, nil
