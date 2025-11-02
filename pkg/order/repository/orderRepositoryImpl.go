@@ -366,3 +366,18 @@ func (or *OrderRepositoryImpl) GetNotificationByUserID(userID uuid.UUID) ([]*ent
 	}
 	return notifications, nil
 }
+
+func (or *OrderRepositoryImpl) GetUserByID(userID uuid.UUID) (*entities.User, error) {
+	var user entities.User
+	if err := or.db.Connect().First(&user, "user_id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (or *OrderRepositoryImpl) UpdateWalletBalance(userID uuid.UUID, newBalance float64) error {
+	return or.db.Connect().
+		Model(&entities.User{}).
+		Where("user_id = ?", userID).
+		Update("wallet", newBalance).Error
+}

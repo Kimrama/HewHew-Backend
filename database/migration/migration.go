@@ -14,7 +14,7 @@ func Migrate(db database.Database) {
 	// base entity (No FK)
 	// UserMigration(tx)
 	// ShopMigration(tx)
-	DropOffMigration(tx)
+	//DropOffMigration(tx)
 	// WasteDropMigration(tx)
 	// CanteenMigration(tx)
 	// ==========
@@ -28,16 +28,16 @@ func Migrate(db database.Database) {
 	// ==========
 
 	// entities that need user/shop/menu
-	OrderMigration(tx)
+	//OrderMigration(tx)
 	// FavouriteMigration(tx)
 	// ReviewMigration(tx)
 
 	// ===========
 	// entities that need order/menu
-	MenuQuantityMigration(tx)
-	ChatMigration(tx)
-	NotificationMigration(tx)
-	TransactionLogMigration(tx)
+	//MenuQuantityMigration(tx)
+	//ChatMigration(tx)
+	//NotificationMigration(tx)
+	//TransactionLogMigration(tx)
 	// ===========
 
 	if err := tx.Commit().Error; err != nil {

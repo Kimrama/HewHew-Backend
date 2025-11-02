@@ -210,6 +210,8 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 		TimeStamp:      time.Now(),
 	}
 
+	
+
 	if err := os.OrderRepository.CreateNotification(notification); err != nil {
 		return fmt.Errorf("failed to create notification: %v", err)
 	}
@@ -217,6 +219,7 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 	if err := os.OrderRepository.CreateNotificationDriver(notificationDriver); err != nil {
 		return fmt.Errorf("failed to create notification: %v", err)
 	}
+
 
 	return nil
 
@@ -708,6 +711,14 @@ func calculateShippingFee(distanceKm float64) float64 {
 	return math.Round(distanceKm*10*100) / 100
 }
 
+func (os *OrderServiceImpl) GetUserByID(userID uuid.UUID) (*entities.User, error) {
+	user, err := os.OrderRepository.GetUserByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %v", err)
+	}
+	return user, nil
+}
+
 func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.GetOrderResponse, error) {
 	if order == nil || len(order.MenuQuantity) == 0 {
 		return nil, errors.New("order not found or has no menu items")
@@ -773,6 +784,10 @@ func (os *OrderServiceImpl) buildOrderResponse(order *entities.Order) (*model.Ge
 	}, nil
 }
 
+func (oc *OrderServiceImpl) UpdateWalletBalance(userID uuid.UUID, newBalance float64) error {
+	return oc.OrderRepository.UpdateWalletBalance(userID, newBalance)
+}
+
 func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) error {
 	targetUserUUID, err := uuid.Parse(log.TargetUserID)
 	if err != nil {
@@ -829,15 +844,57 @@ func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) erro
 	shippingFee := calculateShippingFee(distance)
 	totalAmount := totalMenuPrice + shippingFee
 
+	user, err := oc.OrderRepository.GetUserByID(targetUserUUID)
+	if err != nil {
+		return fmt.Errorf("failed to get user wallet: %v", err)
+	}
+
+	newBalance := user.Wallet - totalAmount
+	err = oc.OrderRepository.UpdateWalletBalance(targetUserUUID, newBalance)
+	if err != nil {
+		return fmt.Errorf("failed to update wallet balance: %v", err)
+	}
+
 	entitiesLog := &entities.TransactionLog{
 		TransactionLogID: uuid.New(),
 		TargetUserID:     targetUserUUID,
 		OrderID:          orderUUID,
-		Detail:           log.Detail,
+		Detail:           "Payment for order",
 		Amount:           totalAmount,
 		TimeStamp:        time.Now(),
 	}
-	return oc.OrderRepository.CreateTransactionLog(entitiesLog)
+
+	err = oc.OrderRepository.CreateTransactionLog(entitiesLog)
+	if err != nil {
+		return fmt.Errorf("failed to create first transaction log: %v", err)
+	}
+
+	shopOwner, err := oc.OrderRepository.GetUserByID(*order.UserDeliveryID)
+	if err != nil {
+		return fmt.Errorf("failed to get shop owner: %v", err)
+	}
+
+	newShopOwnerBalance := shopOwner.Wallet + totalAmount
+	err = oc.OrderRepository.UpdateWalletBalance(*order.UserDeliveryID, newShopOwnerBalance)
+	if err != nil {
+		return fmt.Errorf("failed to update shop owner wallet balance: %v", err)
+	}
+
+	shopOwnerLog := &entities.TransactionLog{
+		TransactionLogID: uuid.New(),
+		TargetUserID:     *order.UserDeliveryID,
+		OrderID:          orderUUID,
+		Detail:           "Received payment for order",
+		Amount:           totalAmount,
+		TimeStamp:        time.Now(),
+	}
+
+	err = oc.OrderRepository.CreateTransactionLog(shopOwnerLog)
+	if err != nil {
+		return fmt.Errorf("failed to create shop owner transaction log: %v", err)
+	}
+
+	return nil
 }
 
 func (oc *OrderServiceImpl) CreateNotification(notification *model.CreateNotificationRequest) error {

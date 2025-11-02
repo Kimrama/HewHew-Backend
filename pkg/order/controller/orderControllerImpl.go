@@ -413,7 +413,6 @@ func (oc *OrderControllerImpl) CreateTransactionLog(ctx *fiber.Ctx) error {
 		})
 	}
 
-	// ส่ง model ให้ service แปลงเป็น entity เอง
 	if err := oc.OrderService.CreateTransactionLog(&body); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
