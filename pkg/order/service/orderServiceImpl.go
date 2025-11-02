@@ -135,7 +135,20 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 		TimeStamp:      time.Now(),
 	}
 
+	notificationDriver := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        order.OrderID,
+		ReceiverID:     *order.UserDeliveryID,
+		Topic:          "Order Confirmed",
+		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		TimeStamp:      time.Now(),
+	}
+
 	if err := os.OrderRepository.CreateNotification(notification); err != nil {
+		return fmt.Errorf("failed to create notification: %v", err)
+	}
+
+	if err := os.OrderRepository.CreateNotificationDriver(notificationDriver); err != nil {
 		return fmt.Errorf("failed to create notification: %v", err)
 	}
 
@@ -176,7 +189,20 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 		TimeStamp:      time.Now(),
 	}
 
+	notificationDriver := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        order.OrderID,
+		ReceiverID:     *order.UserDeliveryID,
+		Topic:          "Order Confirmed",
+		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		TimeStamp:      time.Now(),
+	}
+
 	if err := os.OrderRepository.CreateNotification(notification); err != nil {
+		return fmt.Errorf("failed to create notification: %v", err)
+	}
+
+	if err := os.OrderRepository.CreateNotificationDriver(notificationDriver); err != nil {
 		return fmt.Errorf("failed to create notification: %v", err)
 	}
 
@@ -683,4 +709,48 @@ func (oc *OrderServiceImpl) CreateNotification(notification *model.CreateNotific
 	}
 
 	return oc.OrderRepository.CreateNotification(notificationEntity)
+}
+
+func (oc *OrderServiceImpl) CreateNotificationDriver(notification *model.CreateNotificationDriverRequest) error {
+	receiverUUID, err := uuid.Parse(notification.ReceiverID)
+	if err != nil {
+		return fmt.Errorf("invalid ReceiverID: %v", err)
+	}
+
+	orderUUID, err := uuid.Parse(notification.OrderID)
+	if err != nil {
+		return fmt.Errorf("invalid OrderID: %v", err)
+	}
+
+	notificationEntity := &entities.Notification{
+		NotificationID: uuid.New(),
+		OrderID:        orderUUID,
+		ReceiverID:     receiverUUID,
+		Topic:          notification.Topic,
+		Message:        notification.Message,
+		TimeStamp:      time.Now(),
+	}
+
+	return oc.OrderRepository.CreateNotificationDriver(notificationEntity)
+}
+
+func (oc *OrderServiceImpl) GetNotificationByUserID(userID uuid.UUID) ([]*model.GetNotification, error) {
+	notifications, err := oc.OrderRepository.GetNotificationByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*model.GetNotification
+	for _, n := range notifications {
+		response = append(response, &model.GetNotification{
+			NotificationID: n.NotificationID.String(),
+			OrderID:        n.OrderID.String(),
+			ReceiverID:     n.ReceiverID.String(),
+			Topic:          n.Topic,
+			Message:        n.Message,
+			TimeStamp:      n.TimeStamp,
+		})
+	}
+
+	return response, nil
 }

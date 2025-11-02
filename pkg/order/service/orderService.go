@@ -24,4 +24,6 @@ type OrderService interface {
 	GetReviewByID(reviewID uuid.UUID) (*model.GetReviewResponse, error)
 	CreateTransactionLog(log *model.TransactionLog) error
 	CreateNotification(notification *model.CreateNotificationRequest) error
+	CreateNotificationDriver(notification *model.CreateNotificationDriverRequest) error
+	GetNotificationByUserID(userID uuid.UUID) ([]*model.GetNotification, error)
 }
