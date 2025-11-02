@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
+
 )
 
 type ShopRepositoryImpl struct {
@@ -356,22 +356,21 @@ func (r *ShopRepositoryImpl) CountMenusFromOrders(orderIDs []uuid.UUID) (map[uui
 
 	return menuCounts, nil
 }
-func (r *ShopRepositoryImpl) GetPopularShopsByMenuCounts(menuCounts map[uuid.UUID]int) ([]*entities.Shop, error) {
-	if len(menuCounts) == 0 {
+func (r *ShopRepositoryImpl) GetPopularShopsByOrderIDs(orderIDs []uuid.UUID) ([]*entities.Shop, error) {
+	if len(orderIDs) == 0 {
 		return []*entities.Shop{}, nil
 	}
 
 	db := r.db.Connect()
 	var shops []*entities.Shop
-	menuIDs := make([]uuid.UUID, 0, len(menuCounts))
-	for id := range menuCounts {
-		menuIDs = append(menuIDs, id)
-	}
 
-	err := db.Joins("JOIN menus ON menus.shop_id = shops.shop_id").
-		Where("menus.menu_id IN ?", menuIDs).
-		Group("shops.shop_id").
-		Order(gorm.Expr("SUM(CASE WHEN menus.menu_id IN ? THEN menus.price ELSE 0 END) DESC", menuIDs)).
+	err := db.Table("shops s").
+		Select("s.*, SUM(mq.quantity) AS total_sold").
+		Joins("JOIN menus m ON m.shop_id = s.shop_id").
+		Joins("JOIN menu_quantities mq ON mq.menu_id = m.menu_id").
+		Where("mq.order_id IN ?", orderIDs).
+		Group("s.shop_id").
+		Order("total_sold DESC").
 		Find(&shops).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch popular shops: %v", err)

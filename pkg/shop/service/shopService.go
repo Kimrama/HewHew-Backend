@@ -4,7 +4,7 @@ import (
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/utils"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -28,5 +28,5 @@ type ShopService interface {
 	GetAllTags(shopID uuid.UUID) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
 	GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDResponse, error)
-	GetPopularShops() ([]*entities.Shop, error)
+	GetPopularShops() (fiber.Map, error)
 }
