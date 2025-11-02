@@ -428,6 +428,15 @@ func (os *OrderServiceImpl) GetUserAverageRating(userID uuid.UUID) (float64, err
 }
 
 func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error {
+
+	exists, err := os.OrderRepository.CheckReviewExists(reviewModel.OrderID, userID)
+    if err != nil {
+        return err
+    }
+    if exists {
+        return errors.New("review for this order already exists")
+    }
+
 	reviewEntity := &entities.Review{
 		ReviewID:       uuid.New(),
 		UserReviewerID: userID,

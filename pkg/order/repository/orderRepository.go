@@ -35,4 +35,5 @@ type OrderRepository interface {
 	GetReviewByID(reviewID uuid.UUID) (*entities.Review, error)
 	CreateTransactionLog(log *entities.TransactionLog) error
 	CreateNotification(notification *entities.Notification) error
+	CheckReviewExists(orderID uuid.UUID, reviewerUserID uuid.UUID) (bool, error)
 }
