@@ -14,7 +14,7 @@ type MenuRepository interface {
 	GetMenuByID(menuID uuid.UUID) (*entities.Menu, error)
 	GetTagByID(tagID uuid.UUID) (*entities.Tag, error)
 	DeleteMenu(menuID uuid.UUID) error
-	EditMenu(menuEntity *entities.Menu) error
+	EditMenu(menuID uuid.UUID, updates map[string]interface{}) error
 	EditMenuStatus(menuID uuid.UUID, status string) error
 	EditMenuImage(menuID uuid.UUID, imageModel *utils.ImageModel) error
 	GetOrderIDsFromTransactionLog() ([]uuid.UUID, error)
