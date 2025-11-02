@@ -445,20 +445,14 @@ func (oc *OrderControllerImpl) CreateNotification(ctx *fiber.Ctx) error {
 }
 
 func (oc *OrderControllerImpl) GetNotificationByUserID(ctx *fiber.Ctx) error {
-    var req model.GetNotification
-    if err := ctx.BodyParser(&req); err != nil {
-        return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-            "error": "invalid request body",
-        })
-    }
-
-    if req.ReceiverID == "" {
+    receiverID := ctx.Params("receiver_id")
+    if receiverID == "" {
         return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
             "error": "receiver_id is required",
         })
     }
 
-    userID, err := uuid.Parse(req.ReceiverID)
+    userID, err := uuid.Parse(receiverID)
     if err != nil {
         return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
             "error": "invalid user ID",
