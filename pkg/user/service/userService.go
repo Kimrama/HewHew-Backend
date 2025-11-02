@@ -15,9 +15,10 @@ type UserService interface {
 	GetUserByUserID(userID uuid.UUID) (*entities.User, error)
 	EditUser(userID uuid.UUID, userEntity *entities.User) error
 	EditUserProfileImage(userID uuid.UUID, imageModel *utils.ImageModel) error
+	CreateUserContact(userID uuid.UUID, req *model.EditUserContactRequest) error
+	DeleteUserContact(userID, contactID uuid.UUID) error
 	GetShopAdminByUsername(username string) (*entities.ShopAdmin, error)
-    GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
+	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 	Topup(UserID string, amount float64) error
 	GetAllShops() ([]entities.Shop, error)
 }
-
