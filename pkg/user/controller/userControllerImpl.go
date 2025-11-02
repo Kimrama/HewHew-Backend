@@ -241,7 +241,7 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 			"error": "Failed to retrieve user",
 		})
 	}
-	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 5, 64)
+	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 2, 64)
 	user := &model.UserDetailResponse{
 		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
@@ -268,7 +268,7 @@ func (c *UserControllerImpl) GetUserByID(ctx *fiber.Ctx) error {
 			"error": "Failed to retrieve user",
 		})
 	}
-	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 5, 64)
+	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 2, 64)
 	user := &model.UserDetailResponse{
 		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
