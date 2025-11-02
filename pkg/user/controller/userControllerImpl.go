@@ -7,6 +7,7 @@ import (
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/service"
 	"hewhew-backend/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -241,6 +242,7 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 			"error": "Failed to retrieve user",
 		})
 	}
+	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 5, 64)
 	user := &model.UserDetailResponse{
 		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
@@ -248,6 +250,7 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 		LName:           userEntity.LName,
 		Gender:          userEntity.Gender,
 		ProfileImageURL: userEntity.ProfileImageURL,
+		Wallet:          walletstr,
 	}
 	return ctx.JSON(user)
 }
@@ -266,6 +269,7 @@ func (c *UserControllerImpl) GetUserByID(ctx *fiber.Ctx) error {
 			"error": "Failed to retrieve user",
 		})
 	}
+	walletstr := strconv.FormatFloat(userEntity.Wallet, 'f', 5, 64)
 	user := &model.UserDetailResponse{
 		UserID:          userEntity.UserID,
 		Username:        userEntity.Username,
@@ -273,6 +277,7 @@ func (c *UserControllerImpl) GetUserByID(ctx *fiber.Ctx) error {
 		LName:           userEntity.LName,
 		Gender:          userEntity.Gender,
 		ProfileImageURL: userEntity.ProfileImageURL,
+		Wallet:          walletstr,
 	}
 	return ctx.JSON(user)
 }
