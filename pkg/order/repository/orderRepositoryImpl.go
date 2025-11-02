@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const OrderExpirationDuration = 30000000 * time.Minute
+const OrderExpirationDuration = 30 * time.Minute
 
 type OrderRepositoryImpl struct {
 	db             database.Database
