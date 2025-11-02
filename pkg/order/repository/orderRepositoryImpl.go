@@ -313,6 +313,10 @@ func (or *OrderRepositoryImpl) CreateNotification(notification *entities.Notific
 	return or.db.Connect().Create(notification).Error
 }
 
+func (or *OrderRepositoryImpl) CreateNotificationDriver(notification *entities.Notification) error {
+	return or.db.Connect().Create(notification).Error
+}
+
 func (or *OrderRepositoryImpl) CreateTransactionLog(log *entities.TransactionLog) error {
 	return or.db.Connect().Create(log).Error
 }
@@ -327,4 +331,16 @@ func (or *OrderRepositoryImpl) CheckReviewExists(orderID, userReviewerID uuid.UU
         return false, err
     }
     return count > 0, nil
+}
+
+func (or *OrderRepositoryImpl) GetNotificationByUserID(userID uuid.UUID) ([]*entities.Notification, error) {
+	db := or.db.Connect()
+	var notifications []*entities.Notification
+	err := db.Where("receiver_id = ?", userID).
+		Order("time_stamp DESC").
+		Find(&notifications).Error
+	if err != nil {
+		return nil, err
+	}
+	return notifications, nil
 }
