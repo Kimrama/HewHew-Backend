@@ -100,18 +100,11 @@ func (r *MenuRepositoryImpl) DeleteMenu(menuID uuid.UUID) error {
 	return nil
 }
 
-func (r *MenuRepositoryImpl) EditMenu(menu *entities.Menu) error {
+func (r *MenuRepositoryImpl) EditMenu(menuID uuid.UUID, updates map[string]interface{}) error {
 	db := r.db.Connect()
-	err := db.Model(&entities.Menu{}).
-		Where("menu_id = ?", menu.MenuID).
-		Updates(map[string]interface{}{
-			"name":    menu.Name,
-			"detail":  menu.Detail,
-			"price":   menu.Price,
-			"tag1_id": menu.Tag1ID,
-			"tag2_id": menu.Tag2ID,
-		}).Error
-	return err
+	return db.Model(&entities.Menu{}).
+		Where("menu_id = ?", menuID).
+		Updates(updates).Error
 }
 
 func (r *MenuRepositoryImpl) EditMenuStatus(menuID uuid.UUID, status string) error {

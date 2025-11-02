@@ -216,7 +216,7 @@ func (c *MenuControllerImpl) EditMenu(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin not found"})
 	}
 
-	var req model.MenuRequest
+	var req model.EditMenuRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
 	}
