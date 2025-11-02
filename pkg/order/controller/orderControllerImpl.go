@@ -4,6 +4,7 @@ import (
 	"hewhew-backend/pkg/order/model"
 	"hewhew-backend/pkg/order/service"
 	"hewhew-backend/utils"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -84,7 +85,7 @@ func (oc *OrderControllerImpl) AcceptOrder(ctx *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	
+
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Order accepted successfully",
 	})
@@ -265,6 +266,37 @@ func (oc *OrderControllerImpl) GetOrderByID(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "order not found"})
 	}
 	return ctx.JSON(orderModel)
+}
+
+func (oc *OrderControllerImpl) GetNearbyOrders(ctx *fiber.Ctx) error {
+	var body model.GetNearbyOrdersRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	lat, err := strconv.ParseFloat(body.Latitude, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid latitude",
+		})
+	}
+	lon, err := strconv.ParseFloat(body.Longitude, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid longitude",
+		})
+	}
+
+	shops, err := oc.OrderService.GetNearbyOrders(lat, lon)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(shops)
 }
 
 func (oc *OrderControllerImpl) GetUserAverageRating(ctx *fiber.Ctx) error {
