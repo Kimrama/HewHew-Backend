@@ -376,5 +376,7 @@ func (r *ShopRepositoryImpl) GetPopularShopsByOrderIDs(orderIDs []uuid.UUID) ([]
 		return nil, fmt.Errorf("failed to fetch popular shops: %v", err)
 	}
 
+	
+
 	return shops, nil
 }
