@@ -212,8 +212,35 @@ func (s *MenuServiceImpl) GetPopularMenus() (fiber.Map, error) {
 		return menuCounts[menus[i].MenuID] > menuCounts[menus[j].MenuID]
 	})
 
+		var menuResponses []model.MenuPopularResponse
+	for _, m := range menus {
+		var tags []string
+		if m.Tag1ID != nil {
+			if tag1, err := s.MenuRepository.GetTagByID(*m.Tag1ID); err == nil {
+				tags = append(tags, tag1.Topic)
+			}
+		}
+		if m.Tag2ID != nil {
+			if m.Tag1ID == nil || *m.Tag2ID != *m.Tag1ID {
+				if tag2, err := s.MenuRepository.GetTagByID(*m.Tag2ID); err == nil {
+					tags = append(tags, tag2.Topic)
+				}
+			}
+		}
+
+		menuResponses = append(menuResponses, model.MenuPopularResponse{
+			MenuID:   m.MenuID,
+			Name:     m.Name,
+			Detail:   m.Detail,
+			Price:    m.Price,
+			Status:   m.Status,
+			ImageURL: m.ImageURL,
+			Tags:     tags,
+		})
+	}
+
 	return fiber.Map{
-		"menus":      menus,
+		"menus": menuResponses,
 	}, nil
 }
 
