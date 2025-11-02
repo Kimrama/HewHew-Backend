@@ -14,6 +14,7 @@ func (s *fiberServer) initOrderRouter() {
 
 	orderGroup := s.app.Group("/v1/order")
 	orderGroup.Get("/available", orderController.GetAvailableOrders)
+	orderGroup.Get("/nearby", orderController.GetNearbyOrders)
 	orderGroup.Post("/transaction_log", orderController.CreateTransactionLog)
 	orderGroup.Use(utils.JWTProtected())
 	orderGroup.Get("/notifications", orderController.GetNotificationByUserID)
