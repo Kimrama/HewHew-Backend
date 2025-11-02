@@ -17,7 +17,7 @@ func (s *fiberServer) initOrderRouter() {
 	orderGroup.Get("/nearby", orderController.GetNearbyOrders)
 	orderGroup.Post("/transaction_log", orderController.CreateTransactionLog)
 	orderGroup.Use(utils.JWTProtected())
-	orderGroup.Get("/notifications", orderController.GetNotificationByUserID)
+	orderGroup.Get("/notifications/:receiver_id", orderController.GetNotificationByUserID)
 	orderGroup.Post("/", orderController.CreateOrder)
 	orderGroup.Get("/", orderController.GetOrdersByUserID)
 	orderGroup.Get("/delivery", orderController.GetOrderByDeliveryUserID)

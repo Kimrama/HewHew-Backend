@@ -127,7 +127,7 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 	}
 
 	order, err := os.OrderRepository.GetOrderByID(acceptOrderModel.OrderID)
-	if err != nil {
+	if err != nil || order == nil {
 		return fmt.Errorf("order with ID %s not found", acceptOrderModel.OrderID)
 	}
 	if order.Status != "waiting" {
@@ -143,16 +143,16 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 		OrderID:        order.OrderID,
 		ReceiverID:     order.UserOrderID,
 		Topic:          "Order Accepted",
-		Message:        fmt.Sprintf("Your order %s has been accepted by the delivery user.", order.OrderID),
+		Message:        "Your order has been accepted by the delivery user.",
 		TimeStamp:      time.Now(),
 	}
 
 	notificationDriver := &entities.Notification{
 		NotificationID: uuid.New(),
 		OrderID:        order.OrderID,
-		ReceiverID:     *order.UserDeliveryID,
-		Topic:          "Order Confirmed",
-		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		ReceiverID:     acceptOrderModel.DeliveryuserID,
+		Topic:          "Order Accepted",
+		Message:        "Your order has been accepted.",
 		TimeStamp:      time.Now(),
 	}
 
@@ -197,7 +197,7 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 		OrderID:        order.OrderID,
 		ReceiverID:     order.UserOrderID,
 		Topic:          "Order Confirmed",
-		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		Message:        "Your order has been confirmed.",
 		TimeStamp:      time.Now(),
 	}
 
@@ -206,7 +206,7 @@ func (os *OrderServiceImpl) ConfirmOrder(confirmOrderModel *model.ConfirmOrderRe
 		OrderID:        order.OrderID,
 		ReceiverID:     *order.UserDeliveryID,
 		Topic:          "Order Confirmed",
-		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		Message:        "You have a new confirmed order.",
 		TimeStamp:      time.Now(),
 	}
 
