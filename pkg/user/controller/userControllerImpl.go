@@ -235,6 +235,49 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 			"error": "Invalid user ID in token",
 		})
 	}
+
+	reviews, err := c.userService.GetReviewsByTargetUserID(userUUID)
+	if err != nil {
+		return fmt.Errorf("failed to get reviews: %v", err)
+	}
+
+	var avg float64
+	if len(reviews) > 0 {
+		var total float64
+		for _, r := range reviews {
+			total += float64(r.Rating)
+		}
+		avg = total / float64(len(reviews))
+	} else {
+		avg = 0
+	}
+
+	var maxOrders int64
+	switch {
+	case avg == 0:
+		maxOrders = 1
+	case avg < 3.5:
+		maxOrders = 1
+	case avg < 4.0:
+		maxOrders = 2
+	case avg < 4.5:
+		maxOrders = 3
+	default:
+		maxOrders = 4
+	}
+
+	count, err := c.userService.CountActiveOrdersByUser(userUUID)
+	if err != nil {
+		return fmt.Errorf("failed to count active orders: %v", err)
+	}
+
+	availableOrders := maxOrders - count
+	if availableOrders < 0 {
+		availableOrders = 0
+	}
+
+	availableOrdersStr := strconv.FormatInt(availableOrders, 10)
+
 	userEntity, err := c.userService.GetUserByUserID(userUUID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -250,6 +293,7 @@ func (c *UserControllerImpl) GetUser(ctx *fiber.Ctx) error {
 		Gender:          userEntity.Gender,
 		ProfileImageURL: userEntity.ProfileImageURL,
 		Wallet:          walletstr,
+		AvailableOrder:  availableOrdersStr,
 	}
 	return ctx.JSON(user)
 }
