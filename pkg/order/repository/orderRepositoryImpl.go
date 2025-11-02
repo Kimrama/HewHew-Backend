@@ -316,3 +316,15 @@ func (or *OrderRepositoryImpl) CreateNotification(notification *entities.Notific
 func (or *OrderRepositoryImpl) CreateTransactionLog(log *entities.TransactionLog) error {
 	return or.db.Connect().Create(log).Error
 }
+
+func (or *OrderRepositoryImpl) CheckReviewExists(orderID, userReviewerID uuid.UUID) (bool, error) {
+    var count int64
+    err := or.db.Connect().
+        Model(&entities.Review{}).
+        Where("order_id = ? AND user_reviewer_id = ?", orderID, userReviewerID).
+        Count(&count).Error
+    if err != nil {
+        return false, err
+    }
+    return count > 0, nil
+}
