@@ -124,10 +124,10 @@ func (r *MenuRepositoryImpl) EditMenuImage(menuID uuid.UUID, imageModel *utils.I
 
 	if menu.ImageURL != "NULL" && menu.ImageURL != "" {
 
-		publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+		publicPrefixRender := fmt.Sprintf("%s/storage/v1/object/public/images/menuImage", r.supabaseConfig.URL)
 		objectPath := strings.TrimPrefix(menu.ImageURL, publicPrefixRender)
 
-		deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
+		deleteURL := fmt.Sprintf("%s/storage/v1/object/images/menuImage%s", r.supabaseConfig.URL, objectPath)
 
 		req, _ := http.NewRequest("DELETE", deleteURL, nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
