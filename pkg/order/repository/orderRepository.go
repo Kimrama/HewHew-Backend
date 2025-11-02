@@ -12,7 +12,6 @@ type OrderRepository interface {
 	CreateOrder(orderEntity *entities.Order) error
 	CreateMenuQuantity(menuQuantityEntity *entities.MenuQuantity) error
 	AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error
-	GetUserAverageRating(userID uuid.UUID) (float64, error)
 	CountActiveOrdersByUser(userID uuid.UUID) (int64, error)
 	ConfirmOrder(orderID uuid.UUID, imageUrl string) error
 	DeleteOrder(orderID uuid.UUID) error

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 	"hewhew-backend/config"
 	"hewhew-backend/database"
@@ -48,25 +47,6 @@ func (or *OrderRepositoryImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRe
 			"status":           "accepted",
 		}).Error
 	return err
-}
-
-func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
-	db := or.db.Connect()
-	var avg sql.NullFloat64
-
-	err := db.Table("reviews").
-		Select("AVG(reviews.rating)").
-		Joins("JOIN orders ON reviews.order_id = orders.order_id").
-		Where("reviews.user_target_id = ? ", userID).
-		Scan(&avg).Error
-
-	if err != nil {
-		return 0, err
-	}
-	if !avg.Valid {
-		return 0, nil
-	}
-	return avg.Float64, nil
 }
 
 func (or *OrderRepositoryImpl) CountActiveOrdersByUser(userID uuid.UUID) (int64, error) {

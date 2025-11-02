@@ -88,20 +88,31 @@ func (os *OrderServiceImpl) CreateOrder(orderModel *model.CreateOrderRequest, us
 }
 
 func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error {
-	rating, err := os.OrderRepository.GetUserAverageRating(acceptOrderModel.DeliveryuserID)
+	reviews, err := os.OrderRepository.GetReviewsByTargetUserID(acceptOrderModel.DeliveryuserID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch user rating: %v", err)
+		return fmt.Errorf("failed to get reviews: %v", err)
+	}
+
+	var avg float64
+	if len(reviews) > 0 {
+		var total float64
+		for _, r := range reviews {
+			total += float64(r.Rating)
+		}
+		avg = total / float64(len(reviews))
+	} else {
+		avg = 0
 	}
 
 	var maxOrders int
 	switch {
-	case rating == 0:
+	case avg == 0:
 		maxOrders = 1
-	case rating < 3.5:
+	case avg < 3.5:
 		maxOrders = 1
-	case rating < 4.0:
+	case avg < 4.0:
 		maxOrders = 2
-	case rating < 4.5:
+	case avg < 4.5:
 		maxOrders = 3
 	default:
 		maxOrders = 4
@@ -550,7 +561,22 @@ func (os *OrderServiceImpl) GetOrderByID(orderID uuid.UUID) (*model.GetOrderById
 }
 
 func (os *OrderServiceImpl) GetUserAverageRating(userID uuid.UUID) (float64, error) {
-	return os.OrderRepository.GetUserAverageRating(userID)
+	reviews, err := os.OrderRepository.GetReviewsByTargetUserID(userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(reviews) == 0 {
+		return 0, nil
+	}
+
+	var total float64
+	for _, r := range reviews {
+		total += float64(r.Rating)
+	}
+
+	avg := total / float64(len(reviews))
+	return avg, nil
 }
 
 func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error {
