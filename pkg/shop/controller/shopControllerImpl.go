@@ -632,3 +632,14 @@ func (s *ShopControllerImpl) GetAllMenus(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{"menus": menus})
 }
+
+func (s *ShopControllerImpl) PopularShops(ctx *fiber.Ctx) error {
+	shops, err := s.ShopService.GetPopularShops()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{"popular_shops": shops})
+}

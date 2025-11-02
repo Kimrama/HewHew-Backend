@@ -4,7 +4,7 @@ import (
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/menu/model"
 	"hewhew-backend/utils"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -16,4 +16,5 @@ type MenuService interface {
 	EditMenu(menuID uuid.UUID, admin *entities.ShopAdmin, menuModel *model.MenuRequest) error
 	EditMenuStatus(menuID uuid.UUID, admin *entities.ShopAdmin, status string) error
 	EditMenuImage(menuID uuid.UUID, admin *entities.ShopAdmin, imageModel *utils.ImageModel) error
+	GetPopularMenus() (fiber.Map, error)
 }

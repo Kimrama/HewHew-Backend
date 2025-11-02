@@ -23,7 +23,7 @@ func (s *fiberServer) initMenuRouter() {
 	menuGroup := s.app.Group("/v1/menu")
 
 	menuGroup.Get("/:menu_id", menuController.GetMenuByID)
-
+	menuGroup.Get("/menus/popular", menuController.PopularMenus)
 	menuGroup.Use(utils.JWTProtected())
 	menuGroup.Post("/", menuController.CreateMenu)
 	menuGroup.Put("/:menu_id", menuController.EditMenu)

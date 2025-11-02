@@ -165,3 +165,63 @@ func (r *MenuRepositoryImpl) EditMenuImage(menuID uuid.UUID, imageModel *utils.I
 
 	return nil
 }
+
+func (r *MenuRepositoryImpl) GetOrderIDsFromTransactionLog() ([]uuid.UUID, error) {
+	db := r.db.Connect()
+	var orderIDs []uuid.UUID
+
+	if err := db.Model(&entities.TransactionLog{}).
+		Pluck("DISTINCT order_id", &orderIDs).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch order IDs from transaction logs: %v", err)
+	}
+
+	return orderIDs, nil
+}
+
+func (r *MenuRepositoryImpl) CountMenusFromOrders(orderIDs []uuid.UUID) (map[uuid.UUID]int, error) {
+	if len(orderIDs) == 0 {
+		return map[uuid.UUID]int{}, nil
+	}
+
+	db := r.db.Connect()
+	type Result struct {
+		MenuID   uuid.UUID
+		TotalQty int
+	}
+	var results []Result
+
+	if err := db.Table("menu_quantities").
+		Select("menu_id, SUM(quantity) as total_qty").
+		Where("order_id IN ?", orderIDs).
+		Group("menu_id").
+		Order("total_qty DESC").
+		Scan(&results).Error; err != nil {
+		return nil, fmt.Errorf("failed to count popular menus: %v", err)
+	}
+
+	menuCounts := make(map[uuid.UUID]int)
+	for _, res := range results {
+		menuCounts[res.MenuID] = res.TotalQty
+	}
+
+	return menuCounts, nil
+}
+
+func (r *MenuRepositoryImpl) GetMenusByIDs(menuCounts map[uuid.UUID]int) ([]*entities.Menu, error) {
+	if len(menuCounts) == 0 {
+		return []*entities.Menu{}, nil
+	}
+
+	db := r.db.Connect()
+	var menus []*entities.Menu
+	menuIDs := make([]uuid.UUID, 0, len(menuCounts))
+	for id := range menuCounts {
+		menuIDs = append(menuIDs, id)
+	}
+
+	if err := db.Where("menu_id IN ?", menuIDs).Find(&menus).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch menus by IDs: %v", err)
+	}
+
+	return menus, nil
+}
