@@ -127,7 +127,7 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 	}
 
 	order, err := os.OrderRepository.GetOrderByID(acceptOrderModel.OrderID)
-	if err != nil {
+	if err != nil || order == nil {
 		return fmt.Errorf("order with ID %s not found", acceptOrderModel.OrderID)
 	}
 	if order.Status != "waiting" {
@@ -150,9 +150,9 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 	notificationDriver := &entities.Notification{
 		NotificationID: uuid.New(),
 		OrderID:        order.OrderID,
-		ReceiverID:     *order.UserDeliveryID,
-		Topic:          "Order Confirmed",
-		Message:        fmt.Sprintf("Your order %s has been confirmed.", order.OrderID),
+		ReceiverID:     acceptOrderModel.DeliveryuserID,
+		Topic:          "Order Accepted",
+		Message:        fmt.Sprintf("Your order %s has been accepted.", order.OrderID),
 		TimeStamp:      time.Now(),
 	}
 
