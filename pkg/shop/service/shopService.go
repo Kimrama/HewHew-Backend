@@ -28,4 +28,5 @@ type ShopService interface {
 	GetAllTags(shopID uuid.UUID) ([]entities.Tag, error)
 	DeleteTag(tagID string) error
 	GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDResponse, error)
+	GetPopularShops() ([]*entities.Shop, error)
 }

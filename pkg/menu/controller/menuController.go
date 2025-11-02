@@ -10,4 +10,5 @@ type MenuController interface {
 	EditMenuStatus(ctx *fiber.Ctx) error
 	EditMenuImage(ctx *fiber.Ctx) error
 	DeleteMenu(ctx *fiber.Ctx) error
+	PopularMenus(ctx *fiber.Ctx) error
 }
