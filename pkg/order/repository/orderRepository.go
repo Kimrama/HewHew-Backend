@@ -12,7 +12,6 @@ type OrderRepository interface {
 	CreateOrder(orderEntity *entities.Order) error
 	CreateMenuQuantity(menuQuantityEntity *entities.MenuQuantity) error
 	AcceptOrder(acceptOrderModel *model.AcceptOrderRequest) error
-	GetUserAverageRating(userID uuid.UUID) (float64, error)
 	CountActiveOrdersByUser(userID uuid.UUID) (int64, error)
 	ConfirmOrder(orderID uuid.UUID, imageUrl string) error
 	DeleteOrder(orderID uuid.UUID) error
@@ -20,6 +19,7 @@ type OrderRepository interface {
 	GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error)
 	GetOrderByDeliveryUserID(userID uuid.UUID) ([]*entities.Order, error)
 	GetOrdersByShopID(shopID uuid.UUID) ([]*entities.Order, error)
+	GetOrdersByCanteens(canteenNames []string) ([]entities.Order, error)
 	GetAvailableOrders() ([]*entities.Order, error)
 	GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error)
 
@@ -28,6 +28,7 @@ type OrderRepository interface {
 	GetShopByID(shopID uuid.UUID) (*entities.Shop, error)
 	GetCanteenByName(name string) (*entities.Canteen, error)
 	GetDropOffByID(id uuid.UUID) (*entities.DropOffLocation, error)
+	GetAllCanteens() ([]*entities.Canteen, error)
 
 	CreateReview(reviewEntity *entities.Review) error
 	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*entities.Review, error)
