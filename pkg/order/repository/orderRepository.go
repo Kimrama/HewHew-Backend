@@ -39,4 +39,6 @@ type OrderRepository interface {
 	CreateNotificationDriver(notification *entities.Notification) error
 	CheckReviewExists(orderID uuid.UUID, reviewerUserID uuid.UUID) (bool, error)
 	GetNotificationByUserID(userID uuid.UUID) ([]*entities.Notification, error)
+	GetUserByID(userID uuid.UUID) (*entities.User, error)
+	UpdateWalletBalance(userID uuid.UUID, newBalance float64) error
 }
