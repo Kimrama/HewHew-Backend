@@ -8,6 +8,7 @@ import (
 	"hewhew-backend/pkg/shop/service"
 	"hewhew-backend/utils"
 	"net/url"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -228,6 +229,37 @@ func (s *ShopControllerImpl) GetShop(ctx *fiber.Ctx) error {
 		"shopimg":      shop.ImageURL,
 		"state":        shop.State,
 	})
+}
+
+func (c *ShopControllerImpl) GetNearbyShops(ctx *fiber.Ctx) error {
+	var body model.GetNearByShopRequest
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request",
+		})
+	}
+
+	lat, err := strconv.ParseFloat(body.Latitude, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid latitude",
+		})
+	}
+	lon, err := strconv.ParseFloat(body.Longitude, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid longitude",
+		})
+	}
+
+	shops, err := c.ShopService.GetNearbyShops(lat, lon)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.JSON(shops)
 }
 
 func (s *ShopControllerImpl) GetAllShops(ctx *fiber.Ctx) error {

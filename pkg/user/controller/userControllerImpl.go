@@ -30,6 +30,8 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 	fname := ctx.FormValue("fname")
 	lname := ctx.FormValue("lname")
 	gender := ctx.FormValue("gender")
+	contactType := ctx.FormValue("contact_type")
+	contactDetail := ctx.FormValue("contact_detail")
 	image, _ := ctx.FormFile("image")
 
 	var imageModel *utils.ImageModel
@@ -42,21 +44,24 @@ func (c *UserControllerImpl) CreateUser(ctx *fiber.Ctx) error {
 		}
 		imageModel = preprocessUploadImage
 	}
+
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to hash password",
 		})
 	}
+
 	userModel := &model.CreateUserRequest{
-		Username: username,
-		Password: hashedPassword,
-		FName:    fname,
-		LName:    lname,
-		Gender:   gender,
-		Image:    imageModel,
+		Username:      username,
+		Password:      hashedPassword,
+		FName:         fname,
+		LName:         lname,
+		Gender:        gender,
+		Image:         imageModel,
+		ContactType:   contactType,
+		ContactDetail: contactDetail,
 	}
-	fmt.Println(userModel.Username)
 
 	if err := c.userService.CreateUser(userModel); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -105,6 +110,75 @@ func (c *UserControllerImpl) EditUserProfileImage(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Profile image updated successfully"})
+}
+
+func (c *UserControllerImpl) CreateUserContact(ctx *fiber.Ctx) error {
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	userIDStr := claims["user_id"].(string)
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
+
+	var req model.EditUserContactRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	if err := c.userService.CreateUserContact(userID, &req); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "User contact updated successfully",
+	})
+}
+
+func (c *UserControllerImpl) DeleteUserContact(ctx *fiber.Ctx) error {
+	contactIDstr := ctx.Params("contactID")
+	contactID, err := uuid.Parse(contactIDstr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid contact ID",
+		})
+	}
+
+	claims, err := getClaimsFromToken(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	userIDStr := claims["user_id"].(string)
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID in token",
+		})
+	}
+
+	if err := c.userService.DeleteUserContact(userID, contactID); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "User contact updated successfully",
+	})
 }
 
 func (c *UserControllerImpl) LoginUser(ctx *fiber.Ctx) error {

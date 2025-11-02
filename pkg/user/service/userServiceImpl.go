@@ -2,19 +2,20 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"hewhew-backend/entities"
 	"hewhew-backend/pkg/user/model"
 	"hewhew-backend/pkg/user/repository"
 	"hewhew-backend/utils"
-	"fmt"
 	"time"
+
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserServiceImpl struct {
 	userRepository repository.UserRepository
 }
-
 
 func NewUserServiceImpl(userRepository repository.UserRepository) UserService {
 	return &UserServiceImpl{
@@ -39,6 +40,7 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 			return err
 		}
 	}
+
 	userEntity := &entities.User{
 		UserID:          uuid.New(),
 		Username:        userModel.Username,
@@ -53,16 +55,26 @@ func (s *UserServiceImpl) CreateUser(userModel *model.CreateUserRequest) error {
 		return err
 	}
 
+	contactEntity := &entities.Contact{
+		ContactID:   uuid.New(),
+		UserID:      userEntity.UserID,
+		ContactType: userModel.ContactType,
+		Detail:      userModel.ContactDetail,
+	}
+	if err := s.userRepository.CreateContact(contactEntity); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error {
-	
+
 	ShopEntity := &entities.Shop{
 		ShopID:      uuid.New(),
-        Name:        "Null",
-        Address:     "Null",
-        CanteenName: "Null",
+		Name:        "Null",
+		Address:     "Null",
+		CanteenName: "Null",
 	}
 
 	if err := s.userRepository.CreateShop(ShopEntity); err != nil {
@@ -70,12 +82,12 @@ func (s *UserServiceImpl) CreateAdmin(userModel *model.CreateAdminRequest) error
 	}
 
 	AdminEntity := &entities.ShopAdmin{
-		AdminID:         uuid.New(),
-		Username:        userModel.Username,
-		Password:        userModel.Password,
-		FName:           userModel.FName,
-		LName:           userModel.LName,
-		ShopID:          ShopEntity.ShopID,
+		AdminID:  uuid.New(),
+		Username: userModel.Username,
+		Password: userModel.Password,
+		FName:    userModel.FName,
+		LName:    userModel.LName,
+		ShopID:   ShopEntity.ShopID,
 	}
 
 	if err := s.userRepository.CreateAdmin(AdminEntity); err != nil {
@@ -93,6 +105,36 @@ func (s *UserServiceImpl) EditUserProfileImage(userID uuid.UUID, imageModel *uti
 	return nil
 }
 
+func (s *UserServiceImpl) CreateUserContact(userID uuid.UUID, req *model.EditUserContactRequest) error {
+	newContact := &entities.Contact{
+		ContactID:   uuid.New(),
+		UserID:      userID,
+		ContactType: req.ContactType,
+		Detail:      req.Detail,
+	}
+
+	if err := s.userRepository.CreateContact(newContact); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserServiceImpl) DeleteUserContact(userID, contactID uuid.UUID) error {
+	contact, err := s.userRepository.GetContactByID(contactID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("contact not found")
+		}
+		return err
+	}
+
+	if contact.UserID != userID {
+		return fmt.Errorf("unauthorized: cannot delete another user's contact")
+	}
+
+	return s.userRepository.DeleteContact(contactID)
+}
 
 func (s *UserServiceImpl) GetUserByUsername(username string) (*entities.User, error) {
 	return s.userRepository.GetUserByUsername(username)
@@ -106,7 +148,7 @@ func (s *UserServiceImpl) GetShopAdminByUsername(username string) (*entities.Sho
 }
 
 func (s *UserServiceImpl) GetShopByAdminID(adminID uuid.UUID) (*entities.Shop, error) {
-    return s.userRepository.GetShopByAdminID(adminID)
+	return s.userRepository.GetShopByAdminID(adminID)
 }
 
 func (s *UserServiceImpl) GetAllShops() ([]entities.Shop, error) {
@@ -119,10 +161,10 @@ func (s *UserServiceImpl) Topup(UserID string, amount float64) error {
 		return fmt.Errorf("invalid UserID: %v", err)
 	}
 	TopupEntity := &entities.TopUp{
-		UserID:   parsedUUID,
-		Amount:   amount,
+		UserID:    parsedUUID,
+		Amount:    amount,
 		TimeStamp: time.Now(),
-		TopUpID:  uuid.New(),
+		TopUpID:   uuid.New(),
 	}
 
 	return s.userRepository.Topup(TopupEntity)

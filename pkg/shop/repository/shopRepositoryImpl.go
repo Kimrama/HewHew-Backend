@@ -204,6 +204,25 @@ func (r *ShopRepositoryImpl) GetAllShops() ([]entities.Shop, error) {
 
 	return shops, nil
 }
+
+func (r *ShopRepositoryImpl) GetNearbyShops(latitude, longitude float64) ([]entities.Shop, error) {
+	var shops []entities.Shop
+	db := r.db.Connect()
+	if err := db.Where("state = ?", true).Find(&shops).Error; err != nil {
+		return nil, err
+	}
+	return shops, nil
+}
+
+func (r *ShopRepositoryImpl) GetShopsByCanteens(canteenNames []string) ([]entities.Shop, error) {
+	var shops []entities.Shop
+	db := r.db.Connect()
+	if err := db.Where("canteen_name IN ?", canteenNames).Find(&shops).Error; err != nil {
+		return nil, err
+	}
+	return shops, nil
+}
+
 func (r *ShopRepositoryImpl) GetShopByID(shopID uuid.UUID) (*entities.Shop, error) {
 	db := r.db.Connect()
 	var shop entities.Shop
