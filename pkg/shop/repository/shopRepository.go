@@ -21,6 +21,7 @@ type ShopRepository interface {
 	GetCanteenByName(canteenName string) (*entities.Canteen, error)
 	GetAllShops() ([]entities.Shop, error)
 	GetShopByID(shopID uuid.UUID) (*entities.Shop, error)
+	GetShopsByCanteens(canteenNames []string) ([]entities.Shop, error)
 	CreateTag(tagModel *entities.Tag) (*entities.Tag, error)
 	GetTagsByShopIDAndTopic(shopID string, topic string) ([]entities.Tag, error)
 	EditTag(tagModel *entities.Tag) error

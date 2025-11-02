@@ -7,6 +7,8 @@ import (
 	"hewhew-backend/pkg/shop/model"
 	"hewhew-backend/pkg/shop/repository"
 	"hewhew-backend/utils"
+	"math"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -115,6 +117,51 @@ func (s *ShopServiceImpl) GetAllShops() ([]entities.Shop, error) {
 	return s.ShopRepository.GetAllShops()
 }
 
+func (s *ShopServiceImpl) GetNearbyShops(userLat, userLon float64) ([]model.GetNearByShopResponse, error) {
+	canteens, err := s.ShopRepository.GetAllCanteens()
+	if err != nil {
+		return nil, err
+	}
+
+	var nearbyCanteens []string
+	const maxDistanceKm = 0.5
+	for _, c := range canteens {
+		cLat, err := strconv.ParseFloat(c.Latitude, 64)
+		if err != nil {
+			continue
+		}
+		cLon, err := strconv.ParseFloat(c.Longitude, 64)
+		if err != nil {
+			continue
+		}
+
+		if distanceKm(userLat, userLon, cLat, cLon) <= maxDistanceKm {
+			nearbyCanteens = append(nearbyCanteens, c.CanteenName)
+		}
+	}
+
+	if len(nearbyCanteens) == 0 {
+		return []model.GetNearByShopResponse{}, nil
+	}
+
+	shops, err := s.ShopRepository.GetShopsByCanteens(nearbyCanteens)
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]model.GetNearByShopResponse, 0, len(shops))
+	for _, shop := range shops {
+		response = append(response, model.GetNearByShopResponse{
+			ShopID:      shop.ShopID.String(),
+			Name:        shop.Name,
+			CanteenName: shop.CanteenName,
+			ImageURL:    shop.ImageURL,
+		})
+	}
+
+	return response, nil
+}
+
 func (s *ShopServiceImpl) GetShopByID(shopID uuid.UUID) (*entities.Shop, error) {
 	return s.ShopRepository.GetShopByID(shopID)
 }
@@ -205,4 +252,16 @@ func (s *ShopServiceImpl) GetPopularShops() ([]*entities.Shop, error) {
 
 	return shops, nil
 
+}
+func distanceKm(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371
+	dLat := (lat2 - lat1) * math.Pi / 180.0
+	dLon := (lon2 - lon1) * math.Pi / 180.0
+
+	lat1Rad := lat1 * math.Pi / 180.0
+	lat2Rad := lat2 * math.Pi / 180.0
+
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Sin(dLon/2)*math.Sin(dLon/2)*math.Cos(lat1Rad)*math.Cos(lat2Rad)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
 }
