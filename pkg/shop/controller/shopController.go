@@ -9,6 +9,7 @@ type ShopController interface {
 	EditShop(ctx *fiber.Ctx) error
 	GetShop(ctx *fiber.Ctx) error
 	GetShopByID(ctx *fiber.Ctx) error
+	GetNearbyShops(ctx *fiber.Ctx) error
 	ChangeState(ctx *fiber.Ctx) error
 	EditShopImage(ctx *fiber.Ctx) error
 	GetAllCanteens(ctx *fiber.Ctx) error

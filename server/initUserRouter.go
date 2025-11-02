@@ -21,6 +21,8 @@ func (s *fiberServer) initUserRouter() {
 	userGroup.Put("/profile_image", userController.EditUserProfileImage)
 	userGroup.Put("/", userController.EditUser)
 	userGroup.Put("/topup", userController.Topup)
+	userGroup.Post("/contact", userController.CreateUserContact)
+	userGroup.Delete("/contact/:contactID", userController.DeleteUserContact)
 
 	adminGroup := s.app.Group("/v1/admin")
 	adminGroup.Post("/login", userController.LoginShopAdmin)

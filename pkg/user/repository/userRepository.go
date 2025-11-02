@@ -11,6 +11,9 @@ type UserRepository interface {
 	CreateUser(userEntity *entities.User) error
 	CreateAdmin(adminModel *entities.ShopAdmin) error
 	CreateShop(shopEntity *entities.Shop) error
+	CreateContact(contact *entities.Contact) error
+	GetContactByID(contactID uuid.UUID) (*entities.Contact, error)
+	DeleteContact(contactID uuid.UUID) error
 	UploadUserProfileImage(username string, imageModel *utils.ImageModel) (string, error)
 	GetUserByUsername(username string) (*entities.User, error)
 	GetUserByUserID(userID uuid.UUID) (*entities.User, error)
@@ -21,5 +24,3 @@ type UserRepository interface {
 	Topup(topupModel *entities.TopUp) error
 	GetAllShops() ([]entities.Shop, error)
 }
-
-
