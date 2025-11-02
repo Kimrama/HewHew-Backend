@@ -8,7 +8,7 @@ import (
 	"hewhew-backend/pkg/menu/repository"
 	"hewhew-backend/utils"
 	"strconv"
-
+	"strings"
 	"github.com/google/uuid"
 )
 
@@ -36,6 +36,10 @@ func (s *MenuServiceImpl) CreateMenu(menuModel *model.MenuRequest, shopID uuid.U
 	price, err := strconv.ParseFloat(menuModel.Price, 64)
 	if err != nil {
 		return errors.New("invalid price")
+	}
+
+	if strings.TrimSpace(menuModel.Name) == "" {
+		return errors.New("name cannot be empty")
 	}
 
 	var tag1UUID, tag2UUID *uuid.UUID
