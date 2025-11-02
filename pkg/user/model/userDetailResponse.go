@@ -9,4 +9,5 @@ type UserDetailResponse struct {
 	LName           string    `json:"lname"`
 	Gender          string    `json:"gender"`
 	ProfileImageURL string    `json:"profile_image_url"`
+	Wallet          string    `json:"wallet"`
 }
