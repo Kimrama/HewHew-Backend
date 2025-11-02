@@ -17,7 +17,7 @@ type OrderService interface {
 	GetAvailableOrders() ([]model.GetAvailableOrderResponse, error)
 	GetOrderByID(orderID uuid.UUID) (*model.GetOrderByIdResponse, error)
 	GetUserAverageRating(userID uuid.UUID) (float64, error)
-
+	GetNearbyOrders(userLat, userLon float64) ([]model.GetNearbyOrderResponse, error)
 	CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error
 	GetReviewsByTargetUserID(targetUserID uuid.UUID) ([]*model.GetReviewResponse, error)
 	GetReviewsByReviewerUserID(reviewerUserID uuid.UUID) ([]*model.GetReviewResponse, error)

@@ -7,6 +7,7 @@ import (
 	"hewhew-backend/pkg/order/model"
 	"hewhew-backend/pkg/order/repository"
 	"math"
+	"sort"
 	"strconv"
 	"time"
 
@@ -125,7 +126,7 @@ func (os *OrderServiceImpl) AcceptOrder(acceptOrderModel *model.AcceptOrderReque
 	if err := os.OrderRepository.AcceptOrder(acceptOrderModel); err != nil {
 		return err
 	}
-	
+
 	notification := &entities.Notification{
 		NotificationID: uuid.New(),
 		OrderID:        order.OrderID,
@@ -243,6 +244,131 @@ func (os *OrderServiceImpl) GetOrdersByShopID(userID string) ([]model.GetOrderRe
 		responses = append(responses, *resp)
 	}
 	return responses, nil
+}
+
+func (os *OrderServiceImpl) GetNearbyOrders(userLat, userLon float64) ([]model.GetNearbyOrderResponse, error) {
+	canteens, err := os.OrderRepository.GetAllCanteens()
+	if err != nil {
+		return nil, err
+	}
+
+	type canteenDistance struct {
+		CanteenName string
+		Latitude    float64
+		Longitude   float64
+		Distance    float64
+	}
+
+	var canteenDistances []canteenDistance
+	for _, c := range canteens {
+		cLat, err := strconv.ParseFloat(c.Latitude, 64)
+		if err != nil {
+			continue
+		}
+		cLon, err := strconv.ParseFloat(c.Longitude, 64)
+		if err != nil {
+			continue
+		}
+		dist := calculateDistance(userLat, userLon, cLat, cLon)
+		canteenDistances = append(canteenDistances, canteenDistance{
+			CanteenName: c.CanteenName,
+			Latitude:    cLat,
+			Longitude:   cLon,
+			Distance:    dist,
+		})
+	}
+
+	sort.Slice(canteenDistances, func(i, j int) bool {
+		return canteenDistances[i].Distance < canteenDistances[j].Distance
+	})
+
+	var sortedCanteens []string
+	for _, c := range canteenDistances {
+		sortedCanteens = append(sortedCanteens, c.CanteenName)
+	}
+
+	orders, err := os.OrderRepository.GetOrdersByCanteens(sortedCanteens)
+	if err != nil {
+		return nil, err
+	}
+
+	type orderWithDistance struct {
+		Order    model.GetNearbyOrderResponse
+		Distance float64
+	}
+
+	var results []orderWithDistance
+	for _, order := range orders {
+		menu, err := os.OrderRepository.GetMenuByID(order.MenuQuantity[0].MenuID)
+		if err != nil {
+			return nil, err
+		}
+		var shopName, canteenName string
+		if len(order.MenuQuantity) > 0 && menu.ShopID != uuid.Nil {
+			shop, err := os.OrderRepository.GetShopByID(menu.ShopID)
+			if err != nil {
+				return nil, err
+			}
+			shopName = shop.Name
+			canteenName = shop.CanteenName
+		}
+
+		canteenLat, canteenLon := 0.0, 0.0
+		for _, c := range canteenDistances {
+			if c.CanteenName == canteenName {
+				canteenLat, canteenLon = c.Latitude, c.Longitude
+				break
+			}
+		}
+
+		dist := calculateDistance(userLat, userLon, canteenLat, canteenLon)
+		shippingFee := calculateShippingFee(dist)
+
+		var menuQuantitiesResp []model.MenuQuantityResponse
+		var amount float64
+		for _, mq := range order.MenuQuantity {
+			menu, err := os.OrderRepository.GetMenuByID(mq.MenuID)
+			if err != nil {
+				return nil, err
+			}
+			amount += menu.Price * float64(mq.Quantity)
+			menuQuantitiesResp = append(menuQuantitiesResp, model.MenuQuantityResponse{
+				MenuID:   mq.MenuID,
+				Quantity: mq.Quantity,
+			})
+		}
+
+		results = append(results, orderWithDistance{
+			Order: model.GetNearbyOrderResponse{
+				OrderID:              order.OrderID,
+				UserOrderID:          order.UserOrderID,
+				UserDeliveryID:       order.UserDeliveryID,
+				Status:               order.Status,
+				OrderDate:            order.OrderDate,
+				DeliveryMethod:       order.DeliveryMethod,
+				ConfirmationImageURL: order.ConfirmationImageURL,
+				AppointmentTime:      order.AppointmentTime,
+				DropOffLocationID:    order.DropOffLocationID,
+				MenuQuantity:         menuQuantitiesResp,
+				Amount:               amount,
+				ShopName:             shopName,
+				CanteenName:          canteenName,
+				ShippingFee:          shippingFee,
+			},
+			Distance: dist,
+		})
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Distance < results[j].Distance
+	})
+
+	response := make([]model.GetNearbyOrderResponse, 0, len(results))
+	for _, r := range results {
+		response = append(response, r.Order)
+	}
+
+	return response, nil
 }
 
 func (os *OrderServiceImpl) GetOrderByDeliveryUserID(userID uuid.UUID) ([]model.GetOrderResponse, error) {
@@ -430,12 +556,12 @@ func (os *OrderServiceImpl) GetUserAverageRating(userID uuid.UUID) (float64, err
 func (os *OrderServiceImpl) CreateReview(reviewModel *model.CreateReviewRequest, userID uuid.UUID) error {
 
 	exists, err := os.OrderRepository.CheckReviewExists(reviewModel.OrderID, userID)
-    if err != nil {
-        return err
-    }
-    if exists {
-        return errors.New("review for this order already exists")
-    }
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("review for this order already exists")
+	}
 
 	reviewEntity := &entities.Review{
 		ReviewID:       uuid.New(),

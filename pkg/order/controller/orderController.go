@@ -14,6 +14,7 @@ type OrderController interface {
 	GetOrdersByShopID(ctx *fiber.Ctx) error        // for shop admin
 	GetAvailableOrders(ctx *fiber.Ctx) error       // for delivery user
 	GetOrderByID(ctx *fiber.Ctx) error
+	GetNearbyOrders(ctx *fiber.Ctx) error
 	GetUserAverageRating(ctx *fiber.Ctx) error
 
 	CreateReview(ctx *fiber.Ctx) error

@@ -57,7 +57,7 @@ func (or *OrderRepositoryImpl) GetUserAverageRating(userID uuid.UUID) (float64, 
 	err := db.Table("reviews").
 		Select("AVG(reviews.rating)").
 		Joins("JOIN orders ON reviews.order_id = orders.order_id").
-		Where("reviews.user_target_id = ? AND orders.user_delivery_id = ?", userID, userID).
+		Where("reviews.user_target_id = ? ", userID).
 		Scan(&avg).Error
 
 	if err != nil {
@@ -146,6 +146,37 @@ func (or *OrderRepositoryImpl) GetOrdersByShopID(shopID uuid.UUID) ([]*entities.
 
 	return orders, nil
 }
+
+func (or *OrderRepositoryImpl) GetOrdersByCanteens(canteens []string) ([]entities.Order, error) {
+	db := or.db.Connect()
+	var orders []entities.Order
+
+	orderClause := "CASE"
+	for i, c := range canteens {
+		orderClause += fmt.Sprintf(" WHEN s.canteen_name='%s' THEN %d", c, i)
+	}
+	orderClause += " END"
+
+	err := db.
+		Joins("JOIN menu_quantities mq ON mq.order_id = orders.order_id").
+		Joins("JOIN menus m ON m.menu_id = mq.menu_id").
+		Joins("JOIN shops s ON s.shop_id = m.shop_id").
+		Where("s.canteen_name IN ?", canteens).
+		Where("orders.status = ?", "waiting").
+		Order(orderClause).
+		Preload("MenuQuantity").
+		Preload("TransactionLog").
+		Preload("Notifications").
+		Preload("Chats").
+		Find(&orders).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
 func (or *OrderRepositoryImpl) GetOrdersByUserID(userID uuid.UUID) ([]*entities.Order, error) {
 	db := or.db.Connect()
 	var orders []*entities.Order
@@ -309,6 +340,13 @@ func (or *OrderRepositoryImpl) GetDropOffByID(id uuid.UUID) (*entities.DropOffLo
 	return &dropOff, err
 }
 
+func (or *OrderRepositoryImpl) GetAllCanteens() ([]*entities.Canteen, error) {
+	db := or.db.Connect()
+	var canteens []*entities.Canteen
+	err := db.Find(&canteens).Error
+	return canteens, err
+}
+
 func (or *OrderRepositoryImpl) CreateNotification(notification *entities.Notification) error {
 	return or.db.Connect().Create(notification).Error
 }
@@ -318,13 +356,13 @@ func (or *OrderRepositoryImpl) CreateTransactionLog(log *entities.TransactionLog
 }
 
 func (or *OrderRepositoryImpl) CheckReviewExists(orderID, userReviewerID uuid.UUID) (bool, error) {
-    var count int64
-    err := or.db.Connect().
-        Model(&entities.Review{}).
-        Where("order_id = ? AND user_reviewer_id = ?", orderID, userReviewerID).
-        Count(&count).Error
-    if err != nil {
-        return false, err
-    }
-    return count > 0, nil
+	var count int64
+	err := or.db.Connect().
+		Model(&entities.Review{}).
+		Where("order_id = ? AND user_reviewer_id = ?", orderID, userReviewerID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
