@@ -68,18 +68,25 @@ func (s *ShopServiceImpl) EditShopImage(shopID uuid.UUID, imageModel *utils.Imag
 }
 
 func (s *ShopServiceImpl) EditShop(body model.EditShopRequest, shop uuid.UUID) error {
-	if body.ShopName == "" && body.ShopCanteenName == "" {
+	if body.ShopName == nil && body.ShopCanteenName == nil {
 		return errors.New("no fields to update")
 	}
 
-	shopEntity := &entities.Shop{
-		Name:        body.ShopName,
-		CanteenName: body.ShopCanteenName,
-		Address:     "Null",
+	existingShop, err := s.ShopRepository.GetShopByID(shop)
+	if err != nil {
+		return err
 	}
-	fmt.Println("Service - EditShop: ", shopEntity, shop)
 
-	return s.ShopRepository.EditShop(*shopEntity, shop)
+	if body.ShopName != nil {
+		existingShop.Name = *body.ShopName
+	}
+	if body.ShopCanteenName != nil {
+		existingShop.CanteenName = *body.ShopCanteenName
+	}
+
+	fmt.Println("Service - EditShop: ", existingShop, shop)
+
+	return s.ShopRepository.EditShop(*existingShop, shop)
 }
 
 func (s *ShopServiceImpl) CreateTag(ShopID string, body *model.TagCreateRequest) (*entities.Tag, error) {
@@ -234,25 +241,6 @@ func (s *ShopServiceImpl) GetAllMenus(shopID uuid.UUID) ([]*model.GetMenuByIDRes
 	return responses, nil
 }
 
-func (s *ShopServiceImpl) GetPopularShops() ([]*entities.Shop, error) {
-	orderIDs, err := s.ShopRepository.GetOrderIDsFromTransactionLog()
-	if err != nil {
-		return nil, err
-	}
-
-	menuCounts, err := s.ShopRepository.CountMenusFromOrders(orderIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	shops, err := s.ShopRepository.GetPopularShopsByMenuCounts(menuCounts)
-	if err != nil {
-		return nil, err
-	}
-
-	return shops, nil
-
-}
 func distanceKm(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371
 	dLat := (lat2 - lat1) * math.Pi / 180.0

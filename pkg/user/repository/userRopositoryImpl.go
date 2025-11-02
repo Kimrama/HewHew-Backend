@@ -93,10 +93,10 @@ func (r *UserRepositoryImpl) EditUserProfileImage(userID uuid.UUID, imageModel *
 
 	if user.ProfileImageURL != "NULL" && user.ProfileImageURL != "" {
 
-		publicPrefixRender := fmt.Sprintf("%s/storage/v1/render/image/public/", r.supabaseConfig.URL)
+		publicPrefixRender := fmt.Sprintf("%s/storage/v1/object/public/images/userProfile/", r.supabaseConfig.URL)
 		objectPath := strings.TrimPrefix(user.ProfileImageURL, publicPrefixRender)
 
-		deleteURL := fmt.Sprintf("%s/storage/v1/object/%s", r.supabaseConfig.URL, objectPath)
+		deleteURL := fmt.Sprintf("%s/storage/v1/object/images/userProfile/%s", r.supabaseConfig.URL, objectPath)
 
 		req, _ := http.NewRequest("DELETE", deleteURL, nil)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.supabaseConfig.Key))
