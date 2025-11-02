@@ -7,9 +7,10 @@ import (
 	"hewhew-backend/pkg/menu/model"
 	"hewhew-backend/pkg/menu/repository"
 	"hewhew-backend/utils"
+	"sort"
 	"strconv"
 	"strings"
-	"sort"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -122,46 +123,59 @@ func (s *MenuServiceImpl) DeleteMenu(menuID uuid.UUID, admin *entities.ShopAdmin
 	return s.MenuRepository.DeleteMenu(menuID)
 }
 
-func (s *MenuServiceImpl) EditMenu(menuID uuid.UUID, admin *entities.ShopAdmin, req *model.MenuRequest) error {
-	price, err := strconv.ParseFloat(req.Price, 64)
-	if err != nil {
-		return errors.New("invalid price")
-	}
-
+func (s *MenuServiceImpl) EditMenu(menuID uuid.UUID, admin *entities.ShopAdmin, req *model.EditMenuRequest) error {
 	menu, err := s.MenuRepository.GetMenuByID(menuID)
 	if err != nil {
 		return err
 	}
+
 	if menu.ShopID != admin.ShopID {
 		return errors.New("unauthorized to edit this menu")
 	}
 
-	var tag1UUID, tag2UUID *uuid.UUID
-	if req.Tag1ID != "" {
-		id, err := uuid.Parse(req.Tag1ID)
-		if err != nil {
-			return err
-		}
-		tag1UUID = &id
+	updates := make(map[string]interface{})
+
+	if req.Name != nil {
+		updates["name"] = *req.Name
 	}
-	if req.Tag2ID != "" {
-		id, err := uuid.Parse(req.Tag2ID)
+	if req.Detail != nil {
+		updates["detail"] = *req.Detail
+	}
+	if req.Price != nil {
+		price, err := strconv.ParseFloat(*req.Price, 64)
 		if err != nil {
-			return err
+			return errors.New("invalid price")
 		}
-		tag2UUID = &id
+		updates["price"] = price
+	}
+	if req.Tag1ID != nil {
+		if *req.Tag1ID == "" {
+			updates["tag1_id"] = nil
+		} else {
+			id, err := uuid.Parse(*req.Tag1ID)
+			if err != nil {
+				return err
+			}
+			updates["tag1_id"] = id
+		}
+	}
+	if req.Tag2ID != nil {
+		if *req.Tag2ID == "" {
+			updates["tag2_id"] = nil
+		} else {
+			id, err := uuid.Parse(*req.Tag2ID)
+			if err != nil {
+				return err
+			}
+			updates["tag2_id"] = id
+		}
 	}
 
-	menu = &entities.Menu{
-		MenuID: menuID,
-		Name:   req.Name,
-		Detail: req.Detail,
-		Price:  price,
-		Tag1ID: tag1UUID,
-		Tag2ID: tag2UUID,
+	if len(updates) == 0 {
+		return errors.New("no fields to update")
 	}
 
-	return s.MenuRepository.EditMenu(menu)
+	return s.MenuRepository.EditMenu(menuID, updates)
 }
 
 func (s *MenuServiceImpl) EditMenuStatus(menuID uuid.UUID, admin *entities.ShopAdmin, status string) error {
@@ -189,8 +203,6 @@ func (s *MenuServiceImpl) EditMenuImage(menuID uuid.UUID, admin *entities.ShopAd
 	}
 	return nil
 }
-
-
 
 func (s *MenuServiceImpl) GetPopularMenus() (fiber.Map, error) {
 	orderIDs, err := s.MenuRepository.GetOrderIDsFromTransactionLog()
@@ -243,5 +255,3 @@ func (s *MenuServiceImpl) GetPopularMenus() (fiber.Map, error) {
 		"menus": menuResponses,
 	}, nil
 }
-
-
