@@ -871,7 +871,7 @@ func (oc *OrderServiceImpl) CreateTransactionLog(log *model.TransactionLog) erro
 		return fmt.Errorf("failed to get shop owner: %v", err)
 	}
 
-	newShopOwnerBalance := shopOwner.Wallet + totalAmount
+	newShopOwnerBalance := shopOwner.Wallet + shippingFee
 	err = oc.OrderRepository.UpdateWalletBalance(*order.UserDeliveryID, newShopOwnerBalance)
 	if err != nil {
 		return fmt.Errorf("failed to update shop owner wallet balance: %v", err)
